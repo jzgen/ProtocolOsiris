@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -7,10 +8,13 @@ public class playerCtrl : MonoBehaviour
 {
     PlayerInput input;
 
-    public float rotationSpeed;
-    public Vector2 leftJoystick;
-    public Vector2 rightJoystick;
-
+    public Transform cameraPivot;
+    public float rotationSpeed = 100f;
+    public float xRotation = 0f;
+    
+    Vector2 leftJoystick;
+    Vector2 rightJoystick;
+    
     Animator animator;
     void Awake()
     {
@@ -18,17 +22,24 @@ public class playerCtrl : MonoBehaviour
         input.characterControls.Movement.performed += ctx => leftJoystick = ctx.ReadValue<Vector2>();
         input.characterControls.View.performed += ctx => rightJoystick = ctx.ReadValue<Vector2>();
     }
-    // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
     }
-
-    // Update is called once per frame
     void Update()
     {
         //Handle Rotation
-        transform.Rotate(Vector3.up, rightJoystick.x * rotationSpeed * Time.deltaTime);
+        float joystickR_AxisX = rightJoystick.x * rotationSpeed * Time.deltaTime;
+        float joystickR_AxisY = rightJoystick.y * rotationSpeed * Time.deltaTime;
+
+        xRotation -= joystickR_AxisY;
+        xRotation = Mathf.Clamp(xRotation, -35f, 40f);
+
+        cameraPivot.localRotation = Quaternion.Euler(xRotation, -7f, 0f);
+        transform.Rotate(Vector3.up, joystickR_AxisX);
+
+        animator.SetFloat("ViewY", xRotation);
+
 
         //Handle movement
         if(leftJoystick != Vector2.zero)
@@ -41,8 +52,6 @@ public class playerCtrl : MonoBehaviour
         {
             animator.SetBool("IsWalking", false);
         }
-
-
     }
     private void OnEnable()
     {
