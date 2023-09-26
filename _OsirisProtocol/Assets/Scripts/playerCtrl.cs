@@ -9,22 +9,30 @@ public class playerCtrl : MonoBehaviour
     PlayerInput input;
 
     public Transform cameraPivot;
+    private Transform playerTransform;
+
+    float xRotation = 0f;
+    float yRotation = 0f;
     public float rotationSpeed = 100f;
-    public float xRotation = 0f;
-    
+
     Vector2 leftJoystick;
     Vector2 rightJoystick;
     
     Animator animator;
+
     void Awake()
     {
         input = new PlayerInput();
+        
+        //Joystticks detector
         input.characterControls.Movement.performed += ctx => leftJoystick = ctx.ReadValue<Vector2>();
         input.characterControls.View.performed += ctx => rightJoystick = ctx.ReadValue<Vector2>();
     }
     void Start()
     {
+        playerTransform = transform;
         animator = GetComponent<Animator>();
+
     }
     void Update()
     {
@@ -33,13 +41,12 @@ public class playerCtrl : MonoBehaviour
         float joystickR_AxisY = rightJoystick.y * rotationSpeed * Time.deltaTime;
 
         xRotation -= joystickR_AxisY;
-        xRotation = Mathf.Clamp(xRotation, -35f, 40f);
+        xRotation = Mathf.Clamp(xRotation, -25f, 60f);
 
-        cameraPivot.localRotation = Quaternion.Euler(xRotation, -7f, 0f);
-        transform.Rotate(Vector3.up, joystickR_AxisX);
+        cameraPivot.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
+        playerTransform.Rotate(Vector3.up, joystickR_AxisX);
 
-        animator.SetFloat("ViewY", xRotation);
-
+        animator.SetFloat("ViewY", -(xRotation));
 
         //Handle movement
         if(leftJoystick != Vector2.zero)
@@ -52,6 +59,7 @@ public class playerCtrl : MonoBehaviour
         {
             animator.SetBool("IsWalking", false);
         }
+
     }
     private void OnEnable()
     {
