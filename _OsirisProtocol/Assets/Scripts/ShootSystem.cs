@@ -1,18 +1,21 @@
+using Cinemachine;
 using System.Collections;
+using UnityEngine.InputSystem;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Animations.Rigging;
-using UnityEngine.InputSystem;
 
 public class ShootSystem : MonoBehaviour
 {
     PlayerInput input;
-    bool leftTrigger = false;
+    weaponStats currentWeapon;
 
     public Transform gunEnd;
-    LineRenderer lineRenderer;
 
-    weaponStats currentWeapon;
+    public CinemachineVirtualCamera virtualCamera;
+    private CinemachineBasicMultiChannelPerlin noise;
+
+    bool leftTrigger = false;
+    LineRenderer lineRenderer;
 
     private bool canShoot = true;
 
@@ -27,6 +30,7 @@ public class ShootSystem : MonoBehaviour
 
     private void Start()
     {
+        noise = virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
         searchWeapon();
         lineRenderer = GetComponent<LineRenderer>();
     }
@@ -35,6 +39,8 @@ public class ShootSystem : MonoBehaviour
         //Shoot Handle
         if (leftTrigger==true && canShoot)
         {
+            noise.m_FrequencyGain = 1 / currentWeapon.FireRate;
+            noise.m_AmplitudeGain = 1 / currentWeapon.RecoilAmount;
             StartCoroutine(Shoot());
         }
     }
@@ -47,6 +53,8 @@ public class ShootSystem : MonoBehaviour
 
         yield return new WaitForSeconds(1/currentWeapon.FireRate);
 
+        noise.m_FrequencyGain = 0;
+        noise.m_AmplitudeGain = 0;
         canShoot = true;
     }
     public void raycastShoot()
