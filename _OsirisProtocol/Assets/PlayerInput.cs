@@ -62,6 +62,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Reload"",
+                    ""type"": ""Button"",
+                    ""id"": ""342ddf64-5a0e-4059-bc3e-ef016d7552f7"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -108,6 +117,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Crouch"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""e08d28da-781c-409c-ae46-fec1e91d7820"",
+                    ""path"": ""<Gamepad>/buttonWest"",
+                    ""interactions"": ""Press"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Reload"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -120,6 +140,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_characterControls_View = m_characterControls.FindAction("View", throwIfNotFound: true);
         m_characterControls_Fire = m_characterControls.FindAction("Fire", throwIfNotFound: true);
         m_characterControls_Crouch = m_characterControls.FindAction("Crouch", throwIfNotFound: true);
+        m_characterControls_Reload = m_characterControls.FindAction("Reload", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -185,6 +206,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_characterControls_View;
     private readonly InputAction m_characterControls_Fire;
     private readonly InputAction m_characterControls_Crouch;
+    private readonly InputAction m_characterControls_Reload;
     public struct CharacterControlsActions
     {
         private @PlayerInput m_Wrapper;
@@ -193,6 +215,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @View => m_Wrapper.m_characterControls_View;
         public InputAction @Fire => m_Wrapper.m_characterControls_Fire;
         public InputAction @Crouch => m_Wrapper.m_characterControls_Crouch;
+        public InputAction @Reload => m_Wrapper.m_characterControls_Reload;
         public InputActionMap Get() { return m_Wrapper.m_characterControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -214,6 +237,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Crouch.started += instance.OnCrouch;
             @Crouch.performed += instance.OnCrouch;
             @Crouch.canceled += instance.OnCrouch;
+            @Reload.started += instance.OnReload;
+            @Reload.performed += instance.OnReload;
+            @Reload.canceled += instance.OnReload;
         }
 
         private void UnregisterCallbacks(ICharacterControlsActions instance)
@@ -230,6 +256,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Crouch.started -= instance.OnCrouch;
             @Crouch.performed -= instance.OnCrouch;
             @Crouch.canceled -= instance.OnCrouch;
+            @Reload.started -= instance.OnReload;
+            @Reload.performed -= instance.OnReload;
+            @Reload.canceled -= instance.OnReload;
         }
 
         public void RemoveCallbacks(ICharacterControlsActions instance)
@@ -253,5 +282,6 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnView(InputAction.CallbackContext context);
         void OnFire(InputAction.CallbackContext context);
         void OnCrouch(InputAction.CallbackContext context);
+        void OnReload(InputAction.CallbackContext context);
     }
 }

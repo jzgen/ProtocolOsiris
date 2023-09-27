@@ -8,18 +8,23 @@ public class ShootSystem : MonoBehaviour
 {
     PlayerInput input;
     weaponStats currentWeapon;
+    LineRenderer lineRenderer;
+
+    public int totalAmmo;
+    public int currentAmmo;
+
+    public bool isRealoding;
 
     public Transform gunEnd;
 
-    public CinemachineVirtualCamera virtualCamera;
-    private CinemachineBasicMultiChannelPerlin noise;
+    public CinemachineVirtualCamera standVC;
+    public CinemachineVirtualCamera crouchVC;
+    [HideInInspector] public CinemachineBasicMultiChannelPerlin noise;
 
     bool leftTrigger = false;
-    LineRenderer lineRenderer;
-
     private bool canShoot = true;
 
-    private void Awake()
+    public void Awake()
     {
         input = new PlayerInput();
 
@@ -28,33 +33,64 @@ public class ShootSystem : MonoBehaviour
         input.characterControls.Fire.canceled += ctx => leftTrigger = false;
     }
 
-    private void Start()
+    public void Start()
     {
-        noise = virtualCamera.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+        noise = standVC.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
         searchWeapon();
         lineRenderer = GetComponent<LineRenderer>();
+
     }
-    private void Update()
+    public void Update()
     {
-        //Shoot Handle
-        if (leftTrigger==true && canShoot)
+        if(!isRealoding && totalAmmo > 0)
         {
-            noise.m_FrequencyGain = 1 / currentWeapon.FireRate;
-            noise.m_AmplitudeGain = 1 / currentWeapon.RecoilAmount;
-            StartCoroutine(Shoot());
+
+            if (currentAmmo == 0 || input.characterControls.Reload.triggered && currentAmmo != currentWeapon.magazineCapacity)
+            {
+                StartCoroutine(Reaload());
+            }
+        }
+
+        if (!isRealoding && currentAmmo > 0 )
+        {
+            //Shoot Handle
+            if (leftTrigger == true && canShoot)
+            {
+                StartCoroutine(Shoot());
+            }
+
         }
     }
 
-    private IEnumerator Shoot()
+    public IEnumerator Reaload()
+    {
+        isRealoding=true;
+
+        yield return new WaitForSeconds(currentWeapon.reloadSpeed);
+        
+        if (totalAmmo < currentWeapon.magazineCapacity)
+        {
+            currentAmmo += totalAmmo;
+            totalAmmo -= totalAmmo;
+        }
+        else
+        {
+            int xAmmo = currentWeapon.magazineCapacity - currentAmmo;
+            currentAmmo += xAmmo;
+            totalAmmo -= xAmmo;
+        }
+        isRealoding = false;
+    }
+    public IEnumerator Shoot()
     {
         canShoot = false;
-
+        currentAmmo -= 1; //Ammo substract
+        shakeCamera();
         raycastShoot();
 
         yield return new WaitForSeconds(1/currentWeapon.FireRate);
+        shakeCameraOff();
 
-        noise.m_FrequencyGain = 0;
-        noise.m_AmplitudeGain = 0;
         canShoot = true;
     }
     public void raycastShoot()
@@ -82,6 +118,18 @@ public class ShootSystem : MonoBehaviour
             }
         }
     }
+    public void shakeCamera()
+    {
+        noise.m_FrequencyGain = 1 / currentWeapon.FireRate;
+        noise.m_AmplitudeGain = 1 / currentWeapon.RecoilAmount;
+    }
+
+    public void shakeCameraOff()
+    {
+        noise.m_FrequencyGain = 0;
+        noise.m_AmplitudeGain = 0;
+    }
+
     public void searchWeapon()
     {
         currentWeapon = GetComponentInChildren<weaponStats>();
@@ -107,12 +155,12 @@ public class ShootSystem : MonoBehaviour
         }
     }
 
-    private void OnEnable()
+    public void OnEnable()
     {
         input.characterControls.Enable();
     }
 
-    private void OnDisable()
+    public void OnDisable()
     {
         input?.characterControls.Disable();
     }

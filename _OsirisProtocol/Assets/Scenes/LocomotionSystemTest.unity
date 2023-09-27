@@ -313,7 +313,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.95, y: 1.4499999, z: -1.96}
+  m_LocalPosition: {x: 0.7, y: 1.4499999, z: -1.96}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -862,6 +862,7 @@ GameObject:
   - component: {fileID: 728183543}
   - component: {fileID: 728183542}
   - component: {fileID: 728183541}
+  - component: {fileID: 728183544}
   m_Layer: 0
   m_Name: cm
   m_TagString: Untagged
@@ -947,6 +948,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac0b09e7857660247b1477e93731de29, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &728183544
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 728183539}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68bb026fafb42b14791938953eaace77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_NoiseProfile: {fileID: 11400000, guid: 69ce8388f6785dd4c8c39915efece2f4, type: 2}
+  m_PivotOffset: {x: 0, y: 0, z: 0}
+  m_AmplitudeGain: 1.25
+  m_FrequencyGain: 0.09090909
+  mNoiseOffsets: {x: 0, y: 0, z: 0}
 --- !u!1 &784586798
 GameObject:
   m_ObjectHideFlags: 3
@@ -995,7 +1013,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Damping: {x: 0.1, y: 0.5, z: 0.3}
-  ShoulderOffset: {x: 0.95, y: -0.45, z: 0.04}
+  ShoulderOffset: {x: 0.7, y: -0.45, z: 0.04}
   VerticalArmLength: 0.4
   CameraSide: 1
   CameraDistance: 2
@@ -1213,7 +1231,7 @@ Transform:
   m_GameObject: {fileID: 1160611783}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.95, y: 1.4499999, z: -1.96}
+  m_LocalPosition: {x: 0.7, y: 1.4499999, z: -1.96}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3684,10 +3702,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0db4270f852783140a8c93d3c97bab4a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraPivot: {fileID: 1031499904}
   rotationSpeed: 100
-  onWalking: 0
-  onCrouch: 0
+  xRotation: 0
+  yRotation: -8
+  animator: {fileID: 0}
+  leftJoystick: {x: 0, y: 0}
+  rightJoystick: {x: 0, y: 0}
+  cameraPivot: {fileID: 1031499904}
+  crouchVC: {fileID: 0}
 --- !u!120 &7549644038281411861
 LineRenderer:
   serializedVersion: 2
@@ -3805,7 +3827,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gunEnd: {fileID: 261567513}
-  virtualCamera: {fileID: 1160611784}
+  standVC: {fileID: 1160611784}
+  crouchVC: {fileID: 1916381304}
+  noise: {fileID: 0}
 --- !u!4 &7662249485907467765
 Transform:
   m_ObjectHideFlags: 0
