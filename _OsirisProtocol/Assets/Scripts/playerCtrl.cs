@@ -9,7 +9,7 @@ public class playerCtrl : MonoBehaviour
 {
     PlayerInput input;
 
-    BaseStates currentStates;
+    public BaseStates currentStates;
     StandState standstate = new StandState();
     CrouchState crouchstate = new CrouchState();
 

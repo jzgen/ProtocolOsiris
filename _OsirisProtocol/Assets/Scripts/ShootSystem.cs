@@ -7,7 +7,7 @@ using UnityEngine;
 public class ShootSystem : MonoBehaviour
 {
     PlayerInput input;
-    weaponStats currentWeapon;
+    public weaponStats currentWeapon;
     LineRenderer lineRenderer;
 
     public int totalAmmo;
@@ -31,12 +31,12 @@ public class ShootSystem : MonoBehaviour
         //Right trigger press and realese detector
         input.characterControls.Fire.performed += ctx => leftTrigger = true;
         input.characterControls.Fire.canceled += ctx => leftTrigger = false;
+        searchWeapon();
     }
 
     public void Start()
     {
         noise = standVC.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-        searchWeapon();
         lineRenderer = GetComponent<LineRenderer>();
 
     }
