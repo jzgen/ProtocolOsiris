@@ -22,6 +22,7 @@ public class ShootSystem : MonoBehaviour
     [HideInInspector] public CinemachineBasicMultiChannelPerlin noise;
 
     bool leftTrigger = false;
+    bool rightTrigger = false;
     private bool canShoot = true;
 
     public void Awake()
@@ -31,6 +32,10 @@ public class ShootSystem : MonoBehaviour
         //Right trigger press and realese detector
         input.characterControls.Fire.performed += ctx => leftTrigger = true;
         input.characterControls.Fire.canceled += ctx => leftTrigger = false;
+        //Left trigger press and realese detector
+        input.characterControls.Aim.performed += ctx => rightTrigger = false;
+        input.characterControls.Aim.canceled += ctx => rightTrigger = false;
+
         searchWeapon();
     }
 
