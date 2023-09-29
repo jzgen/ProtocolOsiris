@@ -23,12 +23,6 @@ public class statsDisplay : MonoBehaviour
         playerWeapon = player.GetComponent<ShootSystem>();
         playerState = player.GetComponent<playerCtrl>();
 
-        if (playerWeapon != null)
-            Debug.Log("Shot system component finded");
-
-        if (playerState != null)
-            Debug.Log("Player ctrl component finded");
-
         maxTime = playerWeapon.currentWeapon.reloadSpeed;
     }
 

@@ -8,7 +8,6 @@ public class ShootSystem : MonoBehaviour
 {
     PlayerInput input;
     public weaponStats currentWeapon;
-    LineRenderer lineRenderer;
 
     public int totalAmmo;
     public int currentAmmo;
@@ -42,8 +41,6 @@ public class ShootSystem : MonoBehaviour
     public void Start()
     {
         noise = standVC.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-        lineRenderer = GetComponent<LineRenderer>();
-
     }
     public void Update()
     {
@@ -103,23 +100,24 @@ public class ShootSystem : MonoBehaviour
         //Check and debug if all components are assigned
         checkComponents();
 
-        if (Camera.main != null && lineRenderer != null && gunEnd != null)
+        if (Camera.main != null && gunEnd != null)
         {
             RaycastHit hit;
             Vector3 screenCenter = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0)); //Get the center of screen and return a Vector3
             Ray ray = Camera.main.ScreenPointToRay(screenCenter); //Create a ray from screen center
             ray.origin = gunEnd.position; //Reference to the cannon`s gun
 
-            lineRenderer.SetPosition(0, ray.origin);
-
             //Raycast Shoot
             if (Physics.Raycast(screenCenter, Camera.main.transform.forward, out hit, 100))
             {
-                lineRenderer.SetPosition(1, hit.point);
+                if (hit.collider != null)
+                {
+                    Debug.DrawLine(ray.origin, hit.point, Color.green, 0.1f);
+                }
             }
             else
             {
-                lineRenderer.SetPosition(1, ray.origin + (Camera.main.transform.forward * 100));
+                Debug.DrawLine(ray.origin, Camera.main.transform.forward * 100, Color.red, 0.1f, true);
             }
         }
     }
@@ -149,10 +147,6 @@ public class ShootSystem : MonoBehaviour
         if (Camera.main == null)
         {
             Debug.Log("Missing camera");
-        }
-        if (lineRenderer == null)
-        {
-            Debug.Log("Missing lineRenderer");
         }
         if (gunEnd == null)
         {
