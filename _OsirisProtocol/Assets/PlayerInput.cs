@@ -80,6 +80,15 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Cover"",
+                    ""type"": ""Button"",
+                    ""id"": ""ae436fa5-e612-4b36-89ca-f20245f7ff03"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -148,6 +157,17 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
                     ""action"": ""Aim"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4b7fc747-d3af-40c9-a74a-5ad028ab8c67"",
+                    ""path"": ""<Gamepad>/leftShoulder"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cover"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -162,6 +182,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         m_characterControls_Crouch = m_characterControls.FindAction("Crouch", throwIfNotFound: true);
         m_characterControls_Reload = m_characterControls.FindAction("Reload", throwIfNotFound: true);
         m_characterControls_Aim = m_characterControls.FindAction("Aim", throwIfNotFound: true);
+        m_characterControls_Cover = m_characterControls.FindAction("Cover", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -229,6 +250,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
     private readonly InputAction m_characterControls_Crouch;
     private readonly InputAction m_characterControls_Reload;
     private readonly InputAction m_characterControls_Aim;
+    private readonly InputAction m_characterControls_Cover;
     public struct CharacterControlsActions
     {
         private @PlayerInput m_Wrapper;
@@ -239,6 +261,7 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         public InputAction @Crouch => m_Wrapper.m_characterControls_Crouch;
         public InputAction @Reload => m_Wrapper.m_characterControls_Reload;
         public InputAction @Aim => m_Wrapper.m_characterControls_Aim;
+        public InputAction @Cover => m_Wrapper.m_characterControls_Cover;
         public InputActionMap Get() { return m_Wrapper.m_characterControls; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -266,6 +289,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Aim.started += instance.OnAim;
             @Aim.performed += instance.OnAim;
             @Aim.canceled += instance.OnAim;
+            @Cover.started += instance.OnCover;
+            @Cover.performed += instance.OnCover;
+            @Cover.canceled += instance.OnCover;
         }
 
         private void UnregisterCallbacks(ICharacterControlsActions instance)
@@ -288,6 +314,9 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
             @Aim.started -= instance.OnAim;
             @Aim.performed -= instance.OnAim;
             @Aim.canceled -= instance.OnAim;
+            @Cover.started -= instance.OnCover;
+            @Cover.performed -= instance.OnCover;
+            @Cover.canceled -= instance.OnCover;
         }
 
         public void RemoveCallbacks(ICharacterControlsActions instance)
@@ -313,5 +342,6 @@ public partial class @PlayerInput: IInputActionCollection2, IDisposable
         void OnCrouch(InputAction.CallbackContext context);
         void OnReload(InputAction.CallbackContext context);
         void OnAim(InputAction.CallbackContext context);
+        void OnCover(InputAction.CallbackContext context);
     }
 }
