@@ -1,14 +1,20 @@
+using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class StandState : BaseStates
 {
     public Vector2 leftJoystick;
     public Vector2 rightJoystick;
+
+    CinemachineVirtualCamera virtualCamera;
     public override void EnterState(playerCtrl player)
     {
-
+        player.animator.applyRootMotion = true;
+        virtualCamera = GameObject.Find("Stand VC").GetComponent<CinemachineVirtualCamera>();
+        virtualCamera.Priority = 1;
     }
     public override void UpdateState(playerCtrl player)
     {
@@ -19,7 +25,8 @@ public class StandState : BaseStates
     }
     public override void ExitState(playerCtrl player)
     {
-
+        player.animator.applyRootMotion = false;
+        virtualCamera.Priority = 0;
     }
     public void handleRotation(playerCtrl player)
     {
@@ -29,13 +36,14 @@ public class StandState : BaseStates
         player.xRotation -= joystickR_AxisY;
         player.xRotation = Mathf.Clamp(player.xRotation, -25f, 60f);
 
-        player.cameraPivot.localRotation = Quaternion.Euler(player.xRotation, player.yRotation, 0f);
+        player.standCamPivot.localRotation = Quaternion.Euler(player.xRotation, player.yRotation, 0f);
         player.transform.Rotate(Vector3.up, joystickR_AxisX);
 
         player.animator.SetFloat("ViewY", -(player.xRotation));
     }
     public void onMove(playerCtrl player)
     {
+
         if (leftJoystick != Vector2.zero)
         {
             player.animator.SetBool("IsWalking", true);

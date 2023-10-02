@@ -9,12 +9,17 @@ public class CrouchState : BaseStates
 
     public Vector2 leftJoystick;
     public Vector2 rightJoystick;
+
+    CinemachineVirtualCamera virtualCamera;
+
     public override void EnterState(playerCtrl player)
     {
+        virtualCamera = GameObject.Find("Crouch VC").GetComponent<CinemachineVirtualCamera>();
+        virtualCamera.Priority = 1;
+
         shootSystem = player.GetComponent<ShootSystem>();
 
         player.animator.SetBool("IsCrouch", true);
-        player.crouchVC.Priority = 11;
 
         shootSystem.noise = shootSystem.crouchVC.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
 
@@ -24,13 +29,13 @@ public class CrouchState : BaseStates
         leftJoystick = player.leftJoystick;
         rightJoystick = player.rightJoystick;
 
-        handleRotation(player);
+        //handleRotation(player);
         onMove(player);
     }
     public override void ExitState(playerCtrl player)
     {
         player.animator.SetBool("IsCrouch", false);
-        player.crouchVC.Priority = 0;
+        virtualCamera.Priority = 0;
 
         shootSystem.noise = shootSystem.standVC.GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
 
@@ -43,13 +48,14 @@ public class CrouchState : BaseStates
         player.xRotation -= joystickR_AxisY;
         player.xRotation = Mathf.Clamp(player.xRotation, -25f, 60f);
 
-        player.cameraPivot.localRotation = Quaternion.Euler(player.xRotation, player.yRotation, 0f);
+        player.standCamPivot.localRotation = Quaternion.Euler(player.xRotation, player.yRotation, 0f);
         player.transform.Rotate(Vector3.up, joystickR_AxisX);
 
         player.animator.SetFloat("ViewY", -(player.xRotation));
     }
     public void onMove(playerCtrl player)
     {
+
         if (leftJoystick != Vector2.zero)
         {
             player.animator.SetBool("IsWalking", true);

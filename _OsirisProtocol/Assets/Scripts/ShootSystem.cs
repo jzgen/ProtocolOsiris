@@ -18,6 +18,7 @@ public class ShootSystem : MonoBehaviour
 
     public CinemachineVirtualCamera standVC;
     public CinemachineVirtualCamera crouchVC;
+    
     [HideInInspector] public CinemachineBasicMultiChannelPerlin noise;
 
     bool leftTrigger = false;
