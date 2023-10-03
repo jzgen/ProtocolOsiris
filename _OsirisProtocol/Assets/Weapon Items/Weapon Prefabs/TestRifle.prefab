@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 237404752531252062}
   - component: {fileID: 7788421280841395385}
   - component: {fileID: 415818625518095523}
-  - component: {fileID: 2191734137792902246}
   m_Layer: 0
   m_Name: TestRifle
   m_TagString: Untagged
@@ -107,18 +106,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &2191734137792902246
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5386609452515634916}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdeb4e4c74841ac42bb9e2b63121fb5c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &7244740667072681036
 GameObject:
   m_ObjectHideFlags: 0

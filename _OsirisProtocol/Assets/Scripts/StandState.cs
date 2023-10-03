@@ -6,54 +6,58 @@ using UnityEngine;
 
 public class StandState : BaseStates
 {
-    public Vector2 leftJoystick;
-    public Vector2 rightJoystick;
-
-    CinemachineVirtualCamera virtualCamera;
+    Vector2 leftJoystick;
+    Vector2 rightJoystick;
     public override void EnterState(playerCtrl player)
     {
-        player.animator.applyRootMotion = true;
-        virtualCamera = GameObject.Find("Stand VC").GetComponent<CinemachineVirtualCamera>();
-        virtualCamera.Priority = 1;
+
     }
     public override void UpdateState(playerCtrl player)
     {
-        leftJoystick = player.leftJoystick;
-        rightJoystick = player.rightJoystick;
-        handleRotation(player);
-        onMove(player);
+        //Listen and store the inputs
+        leftJoystick = player.leftJoystick; 
+        rightJoystick=player.rightJoystick;
+
+        //Move the player with Left Joystick Input
+        OnMove(player);
+
+        //Rotate th player
+        OnRotate(player);
+
     }
     public override void ExitState(playerCtrl player)
     {
-        player.animator.applyRootMotion = false;
-        virtualCamera.Priority = 0;
+
     }
-    public void handleRotation(playerCtrl player)
+    void OnMove(playerCtrl player)
     {
-        float joystickR_AxisX = rightJoystick.x * player.rotationSpeed * Time.deltaTime;
-        float joystickR_AxisY = rightJoystick.y * player.rotationSpeed * Time.deltaTime;
+        float AxisX = (leftJoystick.x * player.speed) * Time.deltaTime;
+        float AxisZ = (leftJoystick.y * player.speed) * Time.deltaTime;
 
-        player.xRotation -= joystickR_AxisY;
-        player.xRotation = Mathf.Clamp(player.xRotation, -25f, 60f);
+        Vector3 motion = new Vector3(AxisX, 0, AxisZ);
 
-        player.standCamPivot.localRotation = Quaternion.Euler(player.xRotation, player.yRotation, 0f);
-        player.transform.Rotate(Vector3.up, joystickR_AxisX);
-
-        player.animator.SetFloat("ViewY", -(player.xRotation));
-    }
-    public void onMove(playerCtrl player)
-    {
-
-        if (leftJoystick != Vector2.zero)
+        //Use character controler component to move th player
+        player.transform.Translate(motion, Space.Self);
+        
+        //Update the animator variables
+        if(leftJoystick != Vector2.zero)
         {
             player.animator.SetBool("IsWalking", true);
-            player.animator.SetFloat("AxisY", leftJoystick.y);
+
             player.animator.SetFloat("AxisX", leftJoystick.x);
+            player.animator.SetFloat("AxisY", leftJoystick.y);
         }
         else
         {
             player.animator.SetBool("IsWalking", false);
         }
+
     }
 
+    void OnRotate(playerCtrl player)
+    {
+        float rotatationY = rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
+        player.transform.Rotate(Vector3.up, rotatationY);
+
+    }
 }

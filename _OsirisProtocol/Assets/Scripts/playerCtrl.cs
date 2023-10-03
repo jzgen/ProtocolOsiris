@@ -8,166 +8,170 @@ using UnityEngine.InputSystem.LowLevel;
 
 public class playerCtrl : MonoBehaviour
 {
-    //Cover test
-    private bool coverClose;
-    public bool isCover = false;
-    public float magnitude;
-    private Vector3 hitPos;
-    public Vector3 rayOffset;
-    [HideInInspector] public bool isFlipped;
+    //Cover Global Variables
+    bool coverClose;
+    public bool isFlipped;
+    public Vector3 rayOriginOffset;
+    public float rayDistance = 4f;
+    public float distanceToCover;
+    Vector3 hitPos; //Temporal, for DrawGizmos
+    [HideInInspector] public float lengthCollider;
+    [HideInInspector] public float positionRelativeToCollider;
     [HideInInspector] public Vector3 fixedPosition;
-    [HideInInspector] public float yTargetRotation;
+    [HideInInspector] public Quaternion fixedRotation;
+
+    //MovementController
+    public float rotationSensitivity;
+    public float speed;
 
     //States
     public BaseStates currentStates;
     public StandState standstate = new StandState();
-    public CrouchState crouchstate = new CrouchState();
     public CoverState coverstate = new CoverState();
 
-    //Movement adjustment
-    public float rotationSpeed = 100f;
-
-    //Virtual Camera Values
-    public Transform standCamPivot;
-    public Transform coverCamPivot;
-    [HideInInspector] public float xRotation = 0f;
-    [HideInInspector] public float yRotation = -8f;
-
     //Global Joysticks Values
-    public PlayerInput input;
+    [HideInInspector] public PlayerInput input;
     [HideInInspector] public Vector2 leftJoystick;
     [HideInInspector] public Vector2 rightJoystick;
 
-    //Palyer Animator
+    //Player Animator
     [HideInInspector] public Animator animator;
 
-    CinemachineBrain cameraBrain;
     void Awake()
     {
         input = new PlayerInput();
         input.characterControls.Movement.performed += ctx => leftJoystick = ctx.ReadValue<Vector2>();
         input.characterControls.View.performed += ctx => rightJoystick = ctx.ReadValue<Vector2>();
-        input.characterControls.Crouch.performed += OnCrouchPerformed;
     }
     void Start()
     {
         animator = GetComponent<Animator>();
-
-        cameraBrain = Camera.main.GetComponent<CinemachineBrain>();
 
         //Set stand state as inital state
         SetState(standstate);
     }
     void Update()
     {
+        CoverDetector();
+
+        if (input.characterControls.Cover.triggered && currentStates != coverstate && coverClose)
+        {
+            animator.SetBool("IsCover", true);
+            animator.applyRootMotion = false;
+        }
+        else if(input.characterControls.Cover.triggered && currentStates == coverstate)
+        {
+            animator.SetBool("IsCover", false);
+            animator.applyRootMotion = true;
+        }
 
         //Execute UpdateState for the current state
         if (currentStates != null)
         {
             currentStates.UpdateState(this);
         }
-        
-        OnCoverPerform();
-
     }
-
-    //Switch between cover and stand states when crouch action is performed
-    void OnCrouchPerformed(InputAction.CallbackContext context)
+    private void OnTriggerEnter(Collider other)
     {
-        cameraBrain.m_DefaultBlend.m_Time = 1f;
-
-        if (currentStates == standstate)
+        // Verificar si el objeto que entró en el trigger es el que quieres.
+        if (other.CompareTag("Border"))
         {
-            SetState(crouchstate);
+            // Hacer algo cuando se detecta la colisión con el trigger.
+            Debug.Log("CharacterController entró en el trigger.");
+            Vector3 lastPosition = transform.position;
+            transform.position = lastPosition;
+        }
+    }
+    void SetCover()
+    {
+        if(currentStates !=coverstate)
+        {
+            SetState(coverstate);
         }
         else
         {
             SetState(standstate);
         }
     }
-    void OnCoverPerform()
+    void CoverDetector()
     {
-        Vector3 globalNormal;
-        Vector3 rayOrigin = transform.position + rayOffset;
+        Vector3 rayOrigin = transform.position + rayOriginOffset;
         Vector3 rayDirection = transform.forward;
-        float maxDistance = 3f;
         RaycastHit hit;
-        
-        if(currentStates == coverstate && input.characterControls.Cover.triggered)
+
+        if (Physics.Raycast(rayOrigin, rayDirection, out hit, rayDistance) && hit.collider.tag == "LowCover")
         {
-            SetState(standstate);
-        }
-        else if (Physics.Raycast(rayOrigin, rayDirection, out hit, maxDistance) && currentStates != coverstate) 
-        {   
-            if(hit.collider.tag == "LowCover")
-            {
-                coverClose = true;
-                hitPos = hit.point;
-                
-                //Tranform the local normal values to world values 
-                Vector3 normal = hit.normal;
-                Matrix4x4 globalRotation = hit.transform.localToWorldMatrix;
-                globalNormal = globalRotation.MultiplyVector(normal);
+            //Temporal, for DrawGizmos
+            hitPos = hit.point;
+            coverClose = true;
 
-                //Store the hit rotation in Axis Y
-                float colliderRotation = hit.collider.transform.rotation.eulerAngles.y;
-                
-                //If Game Object is on this angle rotation range 45-135 angles && 225-315 need multiply negative one to get the correc orientation
-                if (colliderRotation > 45 && colliderRotation <135 || colliderRotation > 225 && colliderRotation < 315)
-                {
-                    globalNormal.z *= -1;
-                }
-                
-                //Based on the normal position relative to world we can know the face cover orientation and modify the rotation
-                if (globalNormal.z > 0) //True = back face
-                {
-                    isFlipped = true;
-                }
-                else if (globalNormal.z < 0) //Else = front face 
-                {
-                    isFlipped = false;
-                }
-                
-                //Calculate the  initial position where we are going to move our character in the cover state mode
-                fixedPosition = (hit.point + hit.normal * magnitude) + (Vector3.up * -0.5f); //0.5 is the offset on axis Y, we remove to avoid the player fly when enter to cover state
-                Debug.DrawLine(rayOrigin, hit.point, Color.blue);
+            //Determiante if the cover is flipped and store the rotation to be align to the cover
+            GetFaceOrientation(hit);
 
-                //Calculate de correct rotation 
-                yTargetRotation = colliderRotation + 60;
+            //Get the position to move player behind the cover
+            fixedPosition = (hit.point + hit.normal * distanceToCover) + (Vector3.up * -0.5f);
 
-                //Wait for the trigger input to enter in the cover state
-                if (input.characterControls.Cover.triggered)
-                {
-                    cameraBrain.m_DefaultBlend.m_Time = 1.5f;
-                    SetState(coverstate);
-                }
-            }
+            //Get the current position relative to the cover
+            SetPositionRelativeToCover(hit);
+
+            Debug.DrawLine(rayOrigin, hit.point, Color.blue);
         }
         else
         {
             coverClose = false;
-            globalNormal = Vector3.zero;
+            Debug.DrawLine(rayOrigin, rayOrigin + transform.forward * rayDistance, Color.red);
         }
     }
-    //Debug tools
-    public void OnDrawGizmos()
+    public void SetPositionRelativeToCover(RaycastHit hit)
     {
-        if (coverClose)
+        //Get the size along the X axis of the cover collider
+        if (hit.collider is BoxCollider boxCollider)
+        {
+            lengthCollider = boxCollider.size.x;
+        }
+
+        //Tranform the hit world position to the current cover local space
+        Vector3 localHit = hit.collider.transform.InverseTransformPoint(hitPos);
+        positionRelativeToCollider = localHit.x;
+    }
+    private void GetFaceOrientation(RaycastHit hit)
+    {
+        //Tranform the local normal values to world values 
+        Vector3 normal = hit.normal;
+        Matrix4x4 globalRotation = hit.transform.localToWorldMatrix;
+        Vector3 globalNormal = globalRotation.MultiplyVector(normal);
+
+        //Store the hit rotation in Axis Y
+        float colliderRotation = hit.collider.transform.rotation.eulerAngles.y;
+
+        //If Game Object is on this angle rotation range 45-135 angles && 225-315 need multiply negative one to get the correc orientation
+        if (colliderRotation > 45 && colliderRotation < 135 || colliderRotation > 225 && colliderRotation < 315)
+        {
+            globalNormal.z *= -1;
+        }
+
+        //Based on the normal position relative to world we can know the face cover orientation and modify the rotation
+        if (globalNormal.z > 0) //True = back face
+        {
+            isFlipped = true;
+            fixedRotation = Quaternion.LookRotation(-hit.transform.forward);
+        }
+        else if (globalNormal.z < 0) //Else = front face 
+        {
+            isFlipped = false;
+            fixedRotation = Quaternion.LookRotation(hit.transform.forward);
+        }
+    }
+    private void OnDrawGizmos()
+    {
+        if (coverClose && currentStates!= coverstate)
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawSphere(hitPos, 0.1f);
             Gizmos.DrawSphere(fixedPosition, 0.2f);
         }
     }
-
-    private void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log(collision.gameObject.name);
-    }
-    void setCover()
-    {
-        isCover = true;
-    }
+    //Make the changes between states
     public void SetState(BaseStates state)
     {
         if (currentStates != null)
