@@ -14,6 +14,7 @@ public class AimSystem : MonoBehaviour
 
     public CinemachineVirtualCamera standVC;
     public CinemachineVirtualCamera aimVC;
+    public CinemachineVirtualCamera AimcoverVC;
 
     private void Awake()
     {
@@ -27,19 +28,36 @@ public class AimSystem : MonoBehaviour
 
 
     }
-
     void Update()
     {
         if(leftTrigger)
         {
-            aimVC.Priority = 2;
+            if(player.currentStates == player.standstate)
+            {
+                aimVC.Priority = 2;
+            }
+            else
+            {
+                AimcoverVC.Priority = 4;
+            }
+            
             isAiming = true;
         }
         else
         {
+            if (player.currentStates == player.standstate)
+            {
+                aimVC.Priority = 0;
+            }
+            else
+            {
+                AimcoverVC.Priority = 0;
+            }
+            
             isAiming = false;
-            aimVC.Priority = 0;
         }
+
+        player.animator.SetBool("IsAiming", isAiming);
     }
 
     private void OnEnable()

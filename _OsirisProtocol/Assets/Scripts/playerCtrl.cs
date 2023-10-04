@@ -5,9 +5,13 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.LowLevel;
+using static UnityEngine.Rendering.HableCurve;
 
 public class playerCtrl : MonoBehaviour
 {
+    public Transform gimbalX;
+    public Transform gimbalY;
+
     //Cover System Variables
     bool coverClose;
     public float rayDistance = 0.4f;
@@ -20,11 +24,12 @@ public class playerCtrl : MonoBehaviour
     [HideInInspector] public float lengthCollider;
     [HideInInspector] public float positionRelativeToCollider;
     [HideInInspector] public Vector3 fixedPosition;
+    [HideInInspector] public Vector3 lastPosition;
     [HideInInspector] public Quaternion fixedRotation;
+    [HideInInspector] public Quaternion lastRotation;
 
     //MovementController
     public float rotationSensitivity;
-    public float speed;
 
     //States
     public BaseStates currentStates;
@@ -60,6 +65,11 @@ public class playerCtrl : MonoBehaviour
         //Change between cover and stand system
         if (input.characterControls.Cover.triggered && currentStates != coverstate && coverClose)
         {
+            lastPosition = transform.position;
+            lastRotation = transform.rotation;
+            gimbalY.localRotation = Quaternion.identity;
+            gimbalX.localRotation = Quaternion.identity;
+
             animator.SetBool("IsCover", true);
             animator.applyRootMotion = false;
         }
@@ -174,15 +184,7 @@ public class playerCtrl : MonoBehaviour
             fixedRotation = Quaternion.LookRotation(hit.transform.forward);
         }
     }
-    private void OnDrawGizmos()
-    {
-        if (coverClose && currentStates!= coverstate)
-        {
-            Gizmos.color = Color.blue;
-            Gizmos.DrawSphere(hitPos, 0.1f);
-            Gizmos.DrawSphere(fixedPosition, 0.2f);
-        }
-    }
+
     //Make the changes between states
     public void SetState(BaseStates state)
     {
@@ -201,5 +203,15 @@ public class playerCtrl : MonoBehaviour
     void OnDisable()
     {
         input.characterControls.Disable();
+    }
+    //Debug tools
+    private void OnDrawGizmos()
+    {
+        if (coverClose && currentStates != coverstate)
+        {
+            Gizmos.color = Color.blue;
+            Gizmos.DrawSphere(hitPos, 0.1f);
+            Gizmos.DrawSphere(fixedPosition, 0.2f);
+        }
     }
 }
