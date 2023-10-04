@@ -70,6 +70,7 @@ public class playerCtrl : MonoBehaviour
             gimbalY.localRotation = Quaternion.identity;
             gimbalX.localRotation = Quaternion.identity;
 
+            animator.SetLayerWeight(1, 0);
             animator.SetBool("IsCover", true);
             animator.applyRootMotion = false;
         }
@@ -97,6 +98,7 @@ public class playerCtrl : MonoBehaviour
             SetState(standstate);
         }
     }
+
     void CoverSystem()
     {
         Vector3 rayOrigin = transform.position + rayOriginOffset;

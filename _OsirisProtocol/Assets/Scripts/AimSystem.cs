@@ -2,6 +2,7 @@ using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Animations.Rigging;
 using UnityEngine.InputSystem;
 
 public class AimSystem : MonoBehaviour
@@ -11,25 +12,40 @@ public class AimSystem : MonoBehaviour
     
     public bool isAiming;
     bool leftTrigger;
+    bool check;
 
     public CinemachineVirtualCamera standVC;
     public CinemachineVirtualCamera aimVC;
     public CinemachineVirtualCamera AimcoverVC;
 
+    public Transform cameraFollower;
+    public Transform standAimController;
+    public Transform coverAimController;
+
+    MultiRotationConstraint rotationConstraint;
     private void Awake()
     {
         input = new PlayerInput();
         input.characterControls.Aim.performed += ctx => leftTrigger = true;
         input.characterControls.Aim.canceled += ctx => leftTrigger = false;
+        rotationConstraint = standAimController.parent.GetComponent<MultiRotationConstraint>();
     }
     void Start()
     {
         player = GetComponent<playerCtrl>();
-
-
     }
     void Update()
     {
+        if (player.currentStates == player.coverstate)
+        {
+            check = false;
+            rotationConstraint.weight = 0f;
+        }
+        else if (check)
+        {
+            rotationConstraint.weight = 1f;
+        }
+
         if(leftTrigger)
         {
             if(player.currentStates == player.standstate)
@@ -58,6 +74,11 @@ public class AimSystem : MonoBehaviour
         }
 
         player.animator.SetBool("IsAiming", isAiming);
+    }
+    void SetAniamtorWeightLayer()
+    {
+        check = true;
+        player.animator.SetLayerWeight(1, 0.85f);
     }
 
     private void OnEnable()

@@ -1,13 +1,14 @@
 using Cinemachine;
 using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class StandState : BaseStates
 {
     Vector2 leftJoystick;
     Vector2 rightJoystick;
+
+    float rotationX;
 
     AimSystem playerAim;
     public override void EnterState(playerCtrl player)
@@ -57,5 +58,10 @@ public class StandState : BaseStates
         float rotatationY = rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
         player.transform.Rotate(Vector3.up, rotatationY);
 
+        rotationX -= rightJoystick.y * player.rotationSensitivity * Time.deltaTime;
+        rotationX = Mathf.Clamp(rotationX, -45, 65);
+        
+        playerAim.standAimController.localRotation = Quaternion.Euler(rotationX,0,0);
+        playerAim.cameraFollower.localRotation = Quaternion.Euler(rotationX, 0, 0);
     }
 }
