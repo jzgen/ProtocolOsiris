@@ -8,13 +8,15 @@ using UnityEngine.InputSystem.LowLevel;
 
 public class playerCtrl : MonoBehaviour
 {
-    //Cover Global Variables
+    //Cover System Variables
     bool coverClose;
-    public bool isFlipped;
+    public float rayDistance = 0.4f;
+    public float distanceToCover = 0.5f;
     public Vector3 rayOriginOffset;
-    public float rayDistance = 4f;
-    public float distanceToCover;
+    private float xDirection;
+    private GameObject hitReferenceObject;
     Vector3 hitPos; //Temporal, for DrawGizmos
+    [HideInInspector] public bool isFlipped;
     [HideInInspector] public float lengthCollider;
     [HideInInspector] public float positionRelativeToCollider;
     [HideInInspector] public Vector3 fixedPosition;
@@ -46,14 +48,16 @@ public class playerCtrl : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+        hitReferenceObject = new GameObject("Hit_obj");
 
         //Set stand state as inital state
         SetState(standstate);
     }
     void Update()
     {
-        CoverDetector();
+        CoverSystem(); //Dont move!!!
 
+        //Change between cover and stand system
         if (input.characterControls.Cover.triggered && currentStates != coverstate && coverClose)
         {
             animator.SetBool("IsCover", true);
@@ -71,17 +75,7 @@ public class playerCtrl : MonoBehaviour
             currentStates.UpdateState(this);
         }
     }
-    private void OnTriggerEnter(Collider other)
-    {
-        // Verificar si el objeto que entró en el trigger es el que quieres.
-        if (other.CompareTag("Border"))
-        {
-            // Hacer algo cuando se detecta la colisión con el trigger.
-            Debug.Log("CharacterController entró en el trigger.");
-            Vector3 lastPosition = transform.position;
-            transform.position = lastPosition;
-        }
-    }
+    //This function is called on Animation Event!!!
     void SetCover()
     {
         if(currentStates !=coverstate)
@@ -93,7 +87,7 @@ public class playerCtrl : MonoBehaviour
             SetState(standstate);
         }
     }
-    void CoverDetector()
+    void CoverSystem()
     {
         Vector3 rayOrigin = transform.position + rayOriginOffset;
         Vector3 rayDirection = transform.forward;
@@ -105,6 +99,9 @@ public class playerCtrl : MonoBehaviour
             hitPos = hit.point;
             coverClose = true;
 
+            //Get the direction between the cover and the player and seth anmator to right or left animation
+            GetDirectionPlayerToCover(hit);
+
             //Determiante if the cover is flipped and store the rotation to be align to the cover
             GetFaceOrientation(hit);
 
@@ -112,17 +109,20 @@ public class playerCtrl : MonoBehaviour
             fixedPosition = (hit.point + hit.normal * distanceToCover) + (Vector3.up * -0.5f);
 
             //Get the current position relative to the cover
-            SetPositionRelativeToCover(hit);
+            GetPositionRelativeToCover(hit);
 
             Debug.DrawLine(rayOrigin, hit.point, Color.blue);
         }
         else
         {
+            xDirection = 0f;
+            hitReferenceObject.SetActive(false);
             coverClose = false;
             Debug.DrawLine(rayOrigin, rayOrigin + transform.forward * rayDistance, Color.red);
         }
     }
-    public void SetPositionRelativeToCover(RaycastHit hit)
+
+    public void GetPositionRelativeToCover(RaycastHit hit)
     {
         //Get the size along the X axis of the cover collider
         if (hit.collider is BoxCollider boxCollider)
@@ -133,6 +133,18 @@ public class playerCtrl : MonoBehaviour
         //Tranform the hit world position to the current cover local space
         Vector3 localHit = hit.collider.transform.InverseTransformPoint(hitPos);
         positionRelativeToCollider = localHit.x;
+    }
+    public void GetDirectionPlayerToCover(RaycastHit hit)
+    {
+        hitReferenceObject.SetActive(true);
+        hitReferenceObject.transform.position = hit.point;
+        hitReferenceObject.transform.rotation = Quaternion.LookRotation(hit.normal);
+
+        Vector3 playerPosition = transform.position;
+        Vector3 positionRelativeToOrigin = hitReferenceObject.transform.InverseTransformPoint(playerPosition);
+
+        xDirection = positionRelativeToOrigin.x;
+        animator.SetFloat("playerDirection", xDirection);
     }
     private void GetFaceOrientation(RaycastHit hit)
     {

@@ -8,15 +8,22 @@ public class StandState : BaseStates
 {
     Vector2 leftJoystick;
     Vector2 rightJoystick;
+
+    AimSystem playerAim;
     public override void EnterState(playerCtrl player)
     {
-
+        playerAim = player.GetComponent<AimSystem>();
     }
     public override void UpdateState(playerCtrl player)
     {
         //Listen and store the inputs
         leftJoystick = player.leftJoystick; 
         rightJoystick=player.rightJoystick;
+
+        if (playerAim.isAiming)
+        {
+            leftJoystick = Vector2.ClampMagnitude(leftJoystick, 0.25f);
+        }
 
         //Move the player with Left Joystick Input
         OnMove(player);
@@ -30,15 +37,7 @@ public class StandState : BaseStates
 
     }
     void OnMove(playerCtrl player)
-    {
-        float AxisX = (leftJoystick.x * player.speed) * Time.deltaTime;
-        float AxisZ = (leftJoystick.y * player.speed) * Time.deltaTime;
-
-        Vector3 motion = new Vector3(AxisX, 0, AxisZ);
-
-        //Use character controler component to move th player
-        player.transform.Translate(motion, Space.Self);
-        
+    {   
         //Update the animator variables
         if(leftJoystick != Vector2.zero)
         {
@@ -51,7 +50,6 @@ public class StandState : BaseStates
         {
             player.animator.SetBool("IsWalking", false);
         }
-
     }
 
     void OnRotate(playerCtrl player)

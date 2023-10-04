@@ -129,7 +129,7 @@
                     "name": "",
                     "id": "9ae4956e-3abb-45a3-b746-4fb483d31d94",
                     "path": "<Gamepad>/leftTrigger",
-                    "interactions": "Press(pressPoint=0.1,behavior=2)",
+                    "interactions": "Press(pressPoint=0.2)",
                     "processors": "",
                     "groups": "",
                     "action": "Aim",
