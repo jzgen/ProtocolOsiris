@@ -10,77 +10,141 @@ public class AimSystem : MonoBehaviour
     playerCtrl player;
     PlayerInput input;
     
-    public bool isAiming;
+    public enum PlayerState
+    {
+        Stand,
+        Cover
+    }
+
+    private PlayerState currentState = PlayerState.Stand;
+
     bool leftTrigger;
-    bool check;
+    
+    [HideInInspector] public bool isAiming;
+    [HideInInspector] public bool isCover;
 
-    public CinemachineVirtualCamera standVC;
+    [Header("Virtual Aim Cameras")]
     public CinemachineVirtualCamera aimVC;
-    public CinemachineVirtualCamera AimcoverVC;
+    public CinemachineVirtualCamera coverAimVC;
 
-    public Transform cameraFollower;
+    [HideInInspector] public float standWeightConstraint;
+    [HideInInspector] public float coverWeightConstraint;
+
+    [Header("Animation Rigging Components")]
     public Transform standAimController;
     public Transform coverAimController;
+    public MultiRotationConstraint rotationConstraint;
 
-    MultiRotationConstraint rotationConstraint;
+    [Header("Cameras Pivot")]
+    public Transform cameraFollower;
+    public Transform coverCameraFollower;
+
+    Transform bone;
     private void Awake()
     {
         input = new PlayerInput();
         input.characterControls.Aim.performed += ctx => leftTrigger = true;
         input.characterControls.Aim.canceled += ctx => leftTrigger = false;
-        rotationConstraint = standAimController.parent.GetComponent<MultiRotationConstraint>();
     }
     void Start()
     {
+        bone = GameObject.FindGameObjectWithTag("Player").transform;
+
+        standWeightConstraint = 1;
+        coverWeightConstraint = 0;
+        
+        isCover = false;
+
         player = GetComponent<playerCtrl>();
+        rotationConstraint = rotationConstraint.GetComponent<MultiRotationConstraint>();
     }
     void Update()
     {
-        if (player.currentStates == player.coverstate)
+        Vector3 newPosition = new Vector3(bone.position.x, coverCameraFollower.position.y, bone.position.z);
+        coverCameraFollower.position = newPosition;
+
+        if (rotationConstraint!=null)
         {
-            check = false;
-            rotationConstraint.weight = 0f;
-        }
-        else if (check)
-        {
-            rotationConstraint.weight = 1f;
+            SetRotationConstraintWeight(0, standWeightConstraint); //Adjust in RunTime the torso stand rotation constraint
+            SetRotationConstraintWeight(1, coverWeightConstraint);
         }
 
-        if(leftTrigger)
-        {
-            if(player.currentStates == player.standstate)
-            {
-                aimVC.Priority = 2;
-            }
-            else
-            {
-                AimcoverVC.Priority = 4;
-            }
-            
+
+        if (leftTrigger)
+        {   
             isAiming = true;
+            player.animator.SetBool("IsAiming", true);
+        }
+        else
+        {   
+            isAiming = false;
+            player.animator.SetBool("IsAiming", false);
+        }
+
+        if(isCover)
+        {
+            currentState = PlayerState.Cover;
         }
         else
         {
-            if (player.currentStates == player.standstate)
-            {
-                aimVC.Priority = 0;
-            }
-            else
-            {
-                AimcoverVC.Priority = 0;
-            }
-            
-            isAiming = false;
+            currentState= PlayerState.Stand;
         }
 
-        player.animator.SetBool("IsAiming", isAiming);
+        FSM();
+
     }
-    void SetAniamtorWeightLayer()
+    void FSM()
     {
-        check = true;
-        player.animator.SetLayerWeight(1, 0.85f);
+        switch(currentState)
+        {
+            case PlayerState.Stand:
+                standState();
+                break;
+
+            case PlayerState.Cover:
+                coverState();
+                break;
+        }
     }
 
+    void standState()
+    {
+        if (isAiming)
+        {
+            aimVC.Priority = 2;
+        }
+        else
+        {
+            aimVC.Priority = 0;
+        }
+    }
+
+    void coverState()
+    {
+        if (isAiming)
+        {
+            coverAimVC.Priority = 4;
+        }
+        else
+        {
+            coverAimVC.Priority = 0;
+        }
+    }
+
+    //Animation Event - CoverLo_CoverR2Idle, CoverLo_CoverL2Idle
+    void SetStandWeight()
+    {
+        player.animator.SetLayerWeight(1, 0.85f);
+        standWeightConstraint = 1;
+        isCover = false;
+    }
+    //Void to change the weight of the source rotation constraint
+    public void SetRotationConstraintWeight(int index, float weight)
+    {
+        var sources = rotationConstraint.data.sourceObjects;
+        sources.SetWeight(index, weight);
+        rotationConstraint.data.sourceObjects = sources;
+    }
     private void OnEnable()
     {
         input.characterControls.Enable();

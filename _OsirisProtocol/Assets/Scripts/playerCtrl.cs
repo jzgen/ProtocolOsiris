@@ -9,14 +9,22 @@ using static UnityEngine.Rendering.HableCurve;
 
 public class playerCtrl : MonoBehaviour
 {
-    public Transform gimbalX;
-    public Transform gimbalY;
+    AimSystem aimSystem;
+
+    //Cover Camera Pivot
+    [HideInInspector] public Transform gimbalX;
+    [HideInInspector] public Transform gimbalY;
+
+    //MovementController
+    [Header("Camera Speed Adjusment")]
+    public float rotationSensitivity;
 
     //Cover System Variables
-    bool coverClose;
+    [Header("Cover System Adjustment")]
     public float rayDistance = 0.4f;
     public float distanceToCover = 0.5f;
     public Vector3 rayOriginOffset;
+    bool coverClose;
     private float xDirection;
     private GameObject hitReferenceObject;
     Vector3 hitPos; //Temporal, for DrawGizmos
@@ -28,11 +36,9 @@ public class playerCtrl : MonoBehaviour
     [HideInInspector] public Quaternion fixedRotation;
     [HideInInspector] public Quaternion lastRotation;
 
-    //MovementController
-    public float rotationSensitivity;
-
     //States
     public BaseStates currentStates;
+    public BaseStates lastSate;
     public StandState standstate = new StandState();
     public CoverState coverstate = new CoverState();
 
@@ -53,7 +59,11 @@ public class playerCtrl : MonoBehaviour
     void Start()
     {
         animator = GetComponent<Animator>();
+        aimSystem = GetComponent<AimSystem>();
         hitReferenceObject = new GameObject("Hit_obj");
+
+        gimbalY = aimSystem.coverCameraFollower;
+        gimbalX = aimSystem.coverCameraFollower.GetChild(0);
 
         //Set stand state as inital state
         SetState(standstate);
@@ -65,19 +75,25 @@ public class playerCtrl : MonoBehaviour
         //Change between cover and stand system
         if (input.characterControls.Cover.triggered && currentStates != coverstate && coverClose)
         {
+            aimSystem.isCover = true;
+
+            //Store the target rotation and position to move behind the cover
             lastPosition = transform.position;
             lastRotation = transform.rotation;
+            
+            //Restore the pivot camera rotation before enter to Cover Sate
             gimbalY.localRotation = Quaternion.identity;
             gimbalX.localRotation = Quaternion.identity;
 
-            animator.SetLayerWeight(1, 0);
+            //Activate the cover Transition Animation with the aniamtion event SwitchSates()
             animator.SetBool("IsCover", true);
-            animator.applyRootMotion = false;
+            animator.applyRootMotion = false; //Desactivate to avoid problems with retargetting behind th cover
         }
         else if(input.characterControls.Cover.triggered && currentStates == coverstate)
         {
+            //Activate the cover Transition Animation with the aniamtion event SwitchSates()
             animator.SetBool("IsCover", false);
-            animator.applyRootMotion = true;
+            animator.applyRootMotion = true; //Activate to allow thw player movement
         }
 
         //Execute UpdateState for the current state
@@ -86,16 +102,16 @@ public class playerCtrl : MonoBehaviour
             currentStates.UpdateState(this);
         }
     }
-    //This function is called on Animation Event!!!
-    void SetCover()
+    //Animation Event - CoverLo_Idle2CoverL, CoverLo_Idle2Cover, CoverLo_CoverL2Idle, CoverLo_CoverR2Idle
+    void SwitchSates()
     {
-        if(currentStates !=coverstate)
+        if(currentStates !=coverstate) //Switch to Cover
         {
             SetState(coverstate);
         }
         else
         {
-            SetState(standstate);
+            SetState(standstate); //Switch To Stand
         }
     }
 
@@ -148,13 +164,16 @@ public class playerCtrl : MonoBehaviour
     }
     public void GetDirectionPlayerToCover(RaycastHit hit)
     {
+        //Position a empty object in the hit point
         hitReferenceObject.SetActive(true);
         hitReferenceObject.transform.position = hit.point;
         hitReferenceObject.transform.rotation = Quaternion.LookRotation(hit.normal);
 
+        //Get the player position relative to the empty object local space
         Vector3 playerPosition = transform.position;
         Vector3 positionRelativeToOrigin = hitReferenceObject.transform.InverseTransformPoint(playerPosition);
 
+        //Store the player realtive position along the Axis X and set it to aniamtor
         xDirection = positionRelativeToOrigin.x;
         animator.SetFloat("playerDirection", xDirection);
     }
@@ -192,6 +211,7 @@ public class playerCtrl : MonoBehaviour
     {
         if (currentStates != null)
         {
+            lastSate = currentStates;
             currentStates.ExitState(this);
         }
 

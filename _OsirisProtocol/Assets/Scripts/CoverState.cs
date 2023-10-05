@@ -9,6 +9,9 @@ public class CoverState : BaseStates
     bool canMove = false;
     float speed = 4;
 
+    public float rotationX;
+    public float rotationY;
+
     //Border values
     float maxBorder;
     float minBorder;
@@ -33,7 +36,10 @@ public class CoverState : BaseStates
 
     public override void EnterState(playerCtrl player)
     {
+        debugNullErrors(player);
+
         aimSystem = player.GetComponent<AimSystem>();
+        aimSystem.standWeightConstraint = 0;
 
         //Store the last raycast info and player transforms to avoid variations on the interpolation
         fixedPosition = player.fixedPosition;
@@ -82,8 +88,11 @@ public class CoverState : BaseStates
     }
     public override void ExitState(playerCtrl player)
     {
+        rotationY = 0;
+
         //Return the current VC  to StandVC
         virtualCamera.Priority = 0;
+
         //Clean the variable that allow the playerMove
         canMove = false;
     }
@@ -111,11 +120,27 @@ public class CoverState : BaseStates
     //Handle the camera cover rotation
     void handleRotation(playerCtrl player)
     {
-        float rotatationY = rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
-        player.gimbalY.Rotate(Vector3.up, rotatationY);
+        rotationY += rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
+        player.gimbalY.localRotation = Quaternion.Euler(0, rotationY, 0);
 
-        //float rotationX = rightJoystick.y * player.rotationSensitivity * Time.deltaTime;
-        //player.gimbalX.Rotate(Vector3.right, rotationX);
+        if (aimSystem.isAiming)
+        {
+            //Horizontal Aim Rotation
+            aimSystem.coverWeightConstraint = 1;
+            rotationY = Mathf.Clamp(rotationY, -75, 75);
+
+            //Horizontal Aim Rotation
+            rotationX -= rightJoystick.y *player.rotationSensitivity * Time.deltaTime;
+            player.gimbalX.localRotation = Quaternion.Euler(rotationX, 0, 0);
+            rotationX = Mathf.Clamp(rotationX, -55, 10);
+
+            aimSystem.coverAimController.localRotation = player.gimbalY.localRotation * player.gimbalX.localRotation;
+
+        }
+        else
+        {
+            aimSystem.coverWeightConstraint = 0;
+        }
     }
 
     //Move the player along the local X axis
@@ -175,5 +200,16 @@ public class CoverState : BaseStates
                 player.animator.SetFloat("AxisX", leftJoystick.x);
             }
         }
+    }
+
+    void debugNullErrors(playerCtrl player)
+    {
+        if (player.gimbalX == null)
+            Debug.LogError("Missing " + player.gimbalX + ". Check the Cover Camera Follower component in the Aim System");
+
+        if (player.gimbalY == null)
+            Debug.LogError("Missing " + player.gimbalY + ". Check the Cover Camera Follower component in the Aim System");
+
+
     }
 }

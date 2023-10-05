@@ -8,11 +8,17 @@ public class StandState : BaseStates
     Vector2 leftJoystick;
     Vector2 rightJoystick;
 
-    float rotationX;
+    public float rotationX;
 
     AimSystem playerAim;
+
     public override void EnterState(playerCtrl player)
     {
+        if(player.lastSate == player.coverstate)
+        {
+            rotationX = 0;
+        }
+
         playerAim = player.GetComponent<AimSystem>();
     }
     public override void UpdateState(playerCtrl player)
@@ -29,7 +35,7 @@ public class StandState : BaseStates
         //Move the player with Left Joystick Input
         OnMove(player);
 
-        //Rotate th player
+        //Rotate the player
         OnRotate(player);
 
     }
@@ -52,7 +58,6 @@ public class StandState : BaseStates
             player.animator.SetBool("IsWalking", false);
         }
     }
-
     void OnRotate(playerCtrl player)
     {
         float rotatationY = rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
