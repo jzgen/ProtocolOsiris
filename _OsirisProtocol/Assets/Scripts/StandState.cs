@@ -5,6 +5,7 @@ using UnityEngine;
 
 public class StandState : BaseStates
 {
+
     Vector2 leftJoystick;
     Vector2 rightJoystick;
 
