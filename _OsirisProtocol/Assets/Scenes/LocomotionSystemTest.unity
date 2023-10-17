@@ -352,6 +352,46 @@ Mesh:
     offset: 0
     size: 0
     path: 
+--- !u!1 &132628895 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2596511940160872989, guid: 17376ac1435f8ff4581ba1802f3ffa09,
+    type: 3}
+  m_PrefabInstance: {fileID: 5256828783904755515}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &132628900
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 132628895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35ea64f552cbbcd41996a8cbe48fa37b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  currentHealth: 100
+--- !u!114 &132628904
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 132628895}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ab5f0ba755cd554e9876537e9a85e80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentWeapon: {fileID: 0}
+  totalAmmo: 0
+  currentAmmo: 0
+  isRealoding: 0
+  gunEnd: {fileID: 0}
+  standVC: {fileID: 0}
+  crouchVC: {fileID: 0}
+  noise: {fileID: 0}
 --- !u!43 &389859567
 Mesh:
   m_ObjectHideFlags: 0
@@ -1056,6 +1096,31 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &602193122 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 264060058234750794, guid: 17376ac1435f8ff4581ba1802f3ffa09,
+    type: 3}
+  m_PrefabInstance: {fileID: 5256828783904755515}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &602193127
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 602193122}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2fe621fb97fdae4a977c191861516c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Name: Test Rifle
+  Category: 0
+  Damge: 10
+  FireRate: 5
+  magazineCapacity: 35
+  RecoilAmount: 0
+  reloadSpeed: 4
 --- !u!1 &832575517
 GameObject:
   m_ObjectHideFlags: 0
@@ -6273,6 +6338,11 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2596511940160872989, guid: 17376ac1435f8ff4581ba1802f3ffa09,
+        type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 2786612579432727129, guid: 17376ac1435f8ff4581ba1802f3ffa09,
         type: 3}
       propertyPath: m_LocalPosition.x
@@ -6331,7 +6401,19 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2596511940160872989, guid: 17376ac1435f8ff4581ba1802f3ffa09,
+        type: 3}
+      insertIndex: 4
+      addedObject: {fileID: 132628904}
+    - targetCorrespondingSourceObject: {fileID: 2596511940160872989, guid: 17376ac1435f8ff4581ba1802f3ffa09,
+        type: 3}
+      insertIndex: 5
+      addedObject: {fileID: 132628900}
+    - targetCorrespondingSourceObject: {fileID: 264060058234750794, guid: 17376ac1435f8ff4581ba1802f3ffa09,
+        type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 602193127}
   m_SourcePrefab: {fileID: 100100000, guid: 17376ac1435f8ff4581ba1802f3ffa09, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

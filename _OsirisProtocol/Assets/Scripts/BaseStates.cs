@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class BaseStates
 {
-    public abstract void EnterState(playerCtrl player);
-    public abstract void UpdateState(playerCtrl player);
-    public abstract void ExitState(playerCtrl player);
+    public abstract void EnterState(PlayerCharacterController player);
+    public abstract void UpdateState(PlayerCharacterController player);
+    public abstract void ExitState(PlayerCharacterController player);
 }

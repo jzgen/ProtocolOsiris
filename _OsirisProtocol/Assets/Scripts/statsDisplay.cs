@@ -8,12 +8,12 @@ public class statsDisplay : MonoBehaviour
     public Text displayState;
     public GameObject player;
 
-    playerCtrl playerState;
+    PlayerCharacterController playerState;
 
     // Start is called before the first frame update
     void Start()
     {
-        playerState = player.GetComponent<playerCtrl>();
+        playerState = player.GetComponent<PlayerCharacterController>();
     }
 
     // Update is called once per frame

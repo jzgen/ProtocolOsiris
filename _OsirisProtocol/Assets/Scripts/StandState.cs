@@ -5,7 +5,6 @@ using UnityEngine;
 
 public class StandState : BaseStates
 {
-
     Vector2 leftJoystick;
     Vector2 rightJoystick;
 
@@ -13,7 +12,7 @@ public class StandState : BaseStates
 
     AimSystem playerAim;
 
-    public override void EnterState(playerCtrl player)
+    public override void EnterState(PlayerCharacterController player)
     {
         if(player.lastSate == player.coverstate)
         {
@@ -22,7 +21,7 @@ public class StandState : BaseStates
 
         playerAim = player.GetComponent<AimSystem>();
     }
-    public override void UpdateState(playerCtrl player)
+    public override void UpdateState(PlayerCharacterController player)
     {
         //Listen and store the inputs
         leftJoystick = player.leftJoystick; 
@@ -40,11 +39,11 @@ public class StandState : BaseStates
         OnRotate(player);
 
     }
-    public override void ExitState(playerCtrl player)
+    public override void ExitState(PlayerCharacterController player)
     {
 
     }
-    void OnMove(playerCtrl player)
+    void OnMove(PlayerCharacterController player)
     {   
         //Update the animator variables
         if(leftJoystick != Vector2.zero)
@@ -59,7 +58,7 @@ public class StandState : BaseStates
             player.animator.SetBool("IsWalking", false);
         }
     }
-    void OnRotate(playerCtrl player)
+    void OnRotate(PlayerCharacterController player)
     {
         float rotatationY = rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
         player.transform.Rotate(Vector3.up, rotatationY);

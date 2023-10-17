@@ -7,7 +7,7 @@ using UnityEngine.InputSystem;
 
 public class AimSystem : MonoBehaviour
 {
-    playerCtrl player;
+    PlayerCharacterController player;
     PlayerInput input;
     
     public enum PlayerState
@@ -55,7 +55,7 @@ public class AimSystem : MonoBehaviour
         
         isCover = false;
 
-        player = GetComponent<playerCtrl>();
+        player = GetComponent<PlayerCharacterController>();
         rotationConstraint = rotationConstraint.GetComponent<MultiRotationConstraint>();
     }
     void Update()

@@ -30,7 +30,7 @@ public class CoverState : BaseStates
     CinemachineVirtualCamera virtualCamera;
     AimSystem aimSystem;
 
-    public override void EnterState(playerCtrl player)
+    public override void EnterState(PlayerCharacterController player)
     {
         aimSystem = player.GetComponent<AimSystem>();
         aimSystem.standWeightConstraint = 0;
@@ -50,19 +50,10 @@ public class CoverState : BaseStates
         virtualCamera.Priority = 3;
 
     }
-    public override void UpdateState(playerCtrl player)
+    public override void UpdateState(PlayerCharacterController player)
     {
         leftJoystick = player.leftJoystick;
         rightJoystick = player.rightJoystick;
-
-        if (aimSystem.isAiming)
-        {
-            speed = 1;
-        }
-        else
-        {
-            speed = 4;
-        }
 
         if (!canMove)
         {
@@ -76,7 +67,7 @@ public class CoverState : BaseStates
             MoveAlongCover(player);
         }
     }
-    public override void ExitState(playerCtrl player)
+    public override void ExitState(PlayerCharacterController player)
     {
         rotationY = 0;
 
@@ -87,12 +78,32 @@ public class CoverState : BaseStates
         canMove = false;
     }
 
+    //Move the the player from last position to the initial cover position
+    void Interpolate(PlayerCharacterController player)
+    {
+        timeElapsed += Time.deltaTime;
+        float t = Mathf.Clamp01(timeElapsed / duration);
+
+        Vector3 positionInterpolated = Vector3.Lerp(lastPosition, fixedPosition, t);
+        Quaternion rotationInterpolated = Quaternion.Slerp(lastRotation, fixedRotation, t);
+
+        player.transform.position = positionInterpolated;
+        player.transform.rotation = rotationInterpolated;
+
+        if (t >= 1)
+        {
+            player.transform.position = fixedPosition;
+            player.transform.rotation = fixedRotation;
+            canMove = true;
+        }
+    }
+
     //AllowPlayer Move Along the Cover
-    void MoveAlongCover(playerCtrl player)
+    void MoveAlongCover(PlayerCharacterController player)
     {
         bool borderReached = false;
 
-        //Change border direction
+        //Change border position based on the player direction in cover
         Vector3 rayOrigin = player.borderRayOrigin.transform.position;
         if (leftJoystick.x > 0.1f)
         {
@@ -107,7 +118,7 @@ public class CoverState : BaseStates
         RaycastHit hit;
         if (Physics.Raycast(rayOrigin, player.transform.forward, out hit, 1))
         {
-            //Add the surface oreintation void
+            //Add the surface orientation void
         }
         else
         {
@@ -125,10 +136,21 @@ public class CoverState : BaseStates
             player.transform.Translate(move, Space.Self);
             player.animator.SetFloat("AxisX", leftJoystick.x);
         }
+
+        //Slow the movement speed if is aiming
+        if (aimSystem.isAiming)
+        {
+            speed = 1;
+        }
+        else
+        {
+            speed = 4;
+        }
+
     }
 
     //Handle the camera cover rotation
-    void handleRotation(playerCtrl player)
+    void handleRotation(PlayerCharacterController player)
     {
         rotationY += rightJoystick.x * player.rotationSensitivity * Time.deltaTime;
         player.gimbalY.localRotation = Quaternion.Euler(0, rotationY, 0);
@@ -150,26 +172,6 @@ public class CoverState : BaseStates
         else
         {
             aimSystem.coverWeightConstraint = 0;
-        }
-    }
-
-    //Move the the player from last position to the initial cover position
-    void Interpolate(playerCtrl player)
-    {
-        timeElapsed += Time.deltaTime;
-        float t = Mathf.Clamp01(timeElapsed / duration);
-
-        Vector3 positionInterpolated = Vector3.Lerp(lastPosition, fixedPosition, t);
-        Quaternion rotationInterpolated = Quaternion.Slerp(lastRotation, fixedRotation, t);
-
-        player.transform.position = positionInterpolated;
-        player.transform.rotation = rotationInterpolated;
-
-        if (t >= 1)
-        {
-            player.transform.position = fixedPosition;
-            player.transform.rotation = fixedRotation;
-            canMove = true;
         }
     }
 }
