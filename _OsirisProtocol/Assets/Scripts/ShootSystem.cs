@@ -6,23 +6,24 @@ using UnityEngine.InputSystem;
 
 public class ShootSystem : MonoBehaviour
 {
-    PlayerInput input;
-    public weaponStats currentWeapon;
-
+    [Header("Ammo Values")]
     public int totalAmmo;
     public int currentAmmo;
+    
+    [Header("References")]
+    public Transform gunEnd;
+
+    [Header("VFX Components")]
+    public GameObject muzzleFlashParticles;
+    public GameObject impactParticles;
 
     public bool isRealoding;
 
-    public Transform gunEnd;
-
-    public CinemachineVirtualCamera standVC;
-    public CinemachineVirtualCamera crouchVC;
-
-    [HideInInspector] public CinemachineBasicMultiChannelPerlin noise;
-
     bool leftTrigger = false;
     private bool canShoot = true;
+
+    PlayerInput input;
+    weaponStats currentWeapon;
 
     public void Awake()
     {
@@ -37,7 +38,10 @@ public class ShootSystem : MonoBehaviour
 
     public void Start()
     {
-
+        muzzleFlashParticles = GameObject.FindWithTag("MuzzleFlash");
+        if (muzzleFlashParticles != null ) { Debug.Log("Finded"); }
+        muzzleFlashParticles.SetActive(false);
+        
     }
     public void Update()
     {
@@ -86,7 +90,11 @@ public class ShootSystem : MonoBehaviour
         currentAmmo -= 1; //Ammo substract
         raycastShoot();
 
+        muzzleFlashParticles.SetActive(true);
+
         yield return new WaitForSeconds(1 / currentWeapon.FireRate);
+
+        muzzleFlashParticles.SetActive(false);
 
         canShoot = true;
     }
@@ -95,7 +103,7 @@ public class ShootSystem : MonoBehaviour
         //Check and debug if all components are assigned
         checkComponents();
 
-        if (Camera.main != null && gunEnd != null)
+        if (gunEnd != null)
         {
             RaycastHit hit;
             Vector3 screenCenter = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0)); //Get the center of screen and return a Vector3
@@ -108,6 +116,7 @@ public class ShootSystem : MonoBehaviour
                 if (hit.collider != null)
                 {
                     Debug.DrawLine(ray.origin, hit.point, Color.green, 0.1f);
+                    Instantiate(impactParticles, hit.point, Quaternion.LookRotation(hit.normal));
                 }
             }
             else
@@ -127,10 +136,6 @@ public class ShootSystem : MonoBehaviour
     }
     public void checkComponents()
     {
-        if (Camera.main == null)
-        {
-            Debug.Log("Missing camera");
-        }
         if (gunEnd == null)
         {
             Debug.Log("Missing transform");
