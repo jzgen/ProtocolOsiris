@@ -1,5 +1,4 @@
 using UnityEngine;
-
 public abstract class BaseStates
 {
     public abstract void EnterState(PlayerCharacterController player);

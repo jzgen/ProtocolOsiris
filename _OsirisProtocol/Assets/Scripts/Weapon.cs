@@ -2,16 +2,15 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class weaponStats : MonoBehaviour
+public class Weapon : MonoBehaviour
 {
+    public string Name;
     public enum WeaponCategory
     {
         Rifle,
         Subfusil,
         Pistola
     }
-
-    public string Name;
     public  WeaponCategory Category;
     public float Damge;
     public float FireRate;

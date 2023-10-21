@@ -12,62 +12,60 @@ public class ShootSystem : MonoBehaviour
     
     [Header("References")]
     public Transform gunEnd;
+    public GameObject cameraFollower;
 
     [Header("VFX Components")]
     public GameObject muzzleFlashParticles;
     public GameObject impactParticles;
 
-    public bool isRealoding;
+    public bool isReloading;
 
-    bool leftTrigger = false;
     private bool canShoot = true;
 
-    PlayerInput input;
-    weaponStats currentWeapon;
+    public Weapon currentWeapon;
+    GamepadHandler gamepad;
+
+    VirtualCameraController cameraVC;
 
     public void Awake()
     {
-        input = new PlayerInput();
-
-        //Right trigger press and realese detector
-        input.characterControls.Fire.performed += ctx => leftTrigger = true;
-        input.characterControls.Fire.canceled += ctx => leftTrigger = false;
-
         searchWeapon();
     }
 
     public void Start()
     {
+        cameraVC = Camera.main.GetComponent<VirtualCameraController>();
+        
+        gamepad = GetComponent<GamepadHandler>();
+
         muzzleFlashParticles = GameObject.FindWithTag("MuzzleFlash");
-        if (muzzleFlashParticles != null ) { Debug.Log("Finded"); }
         muzzleFlashParticles.SetActive(false);
         
     }
-    public void Update()
+    public void HandleShot()
     {
-        if (!isRealoding && totalAmmo > 0)
+        if (!isReloading && totalAmmo > 0)
         {
-
-            if (currentAmmo == 0 || input.characterControls.Reload.triggered && currentAmmo != currentWeapon.magazineCapacity)
+            //Handle Reload
+            if (currentAmmo == 0 || gamepad.input.characterControls.Reload.triggered && currentAmmo != currentWeapon.magazineCapacity)
             {
-                StartCoroutine(Reaload());
+                StartCoroutine(Reload());
             }
         }
 
-        if (!isRealoding && currentAmmo > 0)
+        if (!isReloading && currentAmmo > 0)
         {
             //Shoot Handle
-            if (leftTrigger == true && canShoot)
+            if (gamepad.rightTrigger == true && canShoot)
             {
                 StartCoroutine(Shoot());
             }
-
         }
     }
 
-    public IEnumerator Reaload()
+    public IEnumerator Reload()
     {
-        isRealoding = true;
+        isReloading = true;
 
         yield return new WaitForSeconds(currentWeapon.reloadSpeed);
 
@@ -82,17 +80,27 @@ public class ShootSystem : MonoBehaviour
             currentAmmo += xAmmo;
             totalAmmo -= xAmmo;
         }
-        isRealoding = false;
+        isReloading = false;
     }
     public IEnumerator Shoot()
     {
         canShoot = false;
+        
         currentAmmo -= 1; //Ammo substract
+        
         raycastShoot();
+
+        cameraVC.ApplyVibrationToCurrentCamera(0.5f);
+        
+        gamepad.vibrateController(true);
 
         muzzleFlashParticles.SetActive(true);
 
         yield return new WaitForSeconds(1 / currentWeapon.FireRate);
+
+        gamepad.vibrateController(false);
+
+        cameraVC.ApplyVibrationToCurrentCamera(0);
 
         muzzleFlashParticles.SetActive(false);
 
@@ -115,7 +123,9 @@ public class ShootSystem : MonoBehaviour
             {
                 if (hit.collider != null)
                 {
-                    Debug.DrawLine(ray.origin, hit.point, Color.green, 0.1f);
+
+                    Debug.DrawLine(ray.origin, hit.point, Color.blue,5);
+
                     Instantiate(impactParticles, hit.point, Quaternion.LookRotation(hit.normal));
                 }
             }
@@ -127,7 +137,13 @@ public class ShootSystem : MonoBehaviour
     }
     public void searchWeapon()
     {
-        currentWeapon = GetComponentInChildren<weaponStats>();
+        currentWeapon = GetComponentInChildren<Weapon>();
+        gunEnd = currentWeapon.transform.GetChild(0);
+        
+        if(muzzleFlashParticles == null)
+        {
+            muzzleFlashParticles = gunEnd.transform.GetChild(0).gameObject;
+        }
 
         if (currentWeapon == null)
         {
@@ -140,15 +156,5 @@ public class ShootSystem : MonoBehaviour
         {
             Debug.Log("Missing transform");
         }
-    }
-
-    public void OnEnable()
-    {
-        input.characterControls.Enable();
-    }
-
-    public void OnDisable()
-    {
-        input?.characterControls.Disable();
     }
 }
