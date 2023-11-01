@@ -23,7 +23,9 @@ public class ShootSystem : MonoBehaviour
     private bool canShoot = true;
 
     public Weapon currentWeapon;
-    GamepadHandler gamepad;
+    
+    GamepadHandler gamePad;
+    Animator animator;
 
     VirtualCameraController cameraVC;
 
@@ -35,11 +37,12 @@ public class ShootSystem : MonoBehaviour
     public void Start()
     {
         cameraVC = Camera.main.GetComponent<VirtualCameraController>();
-        
-        gamepad = GetComponent<GamepadHandler>();
+        gamePad = GetComponent<GamepadHandler>();
 
         muzzleFlashParticles = GameObject.FindWithTag("MuzzleFlash");
         muzzleFlashParticles.SetActive(false);
+
+        animator = GetComponent<Animator>();
         
     }
     public void HandleShot()
@@ -47,7 +50,7 @@ public class ShootSystem : MonoBehaviour
         if (!isReloading && totalAmmo > 0)
         {
             //Handle Reload
-            if (currentAmmo == 0 || gamepad.input.characterControls.Reload.triggered && currentAmmo != currentWeapon.magazineCapacity)
+            if (currentAmmo == 0 || gamePad.input.characterControls.Reload.triggered && currentAmmo != currentWeapon.magazineCapacity)
             {
                 StartCoroutine(Reload());
             }
@@ -56,9 +59,21 @@ public class ShootSystem : MonoBehaviour
         if (!isReloading && currentAmmo > 0)
         {
             //Shoot Handle
-            if (gamepad.rightTrigger == true && canShoot)
+            if (gamePad.rightTrigger == true && canShoot)
             {
                 StartCoroutine(Shoot());
+            }
+        }
+    }
+
+    public void HandleReload()
+    {
+        if (!isReloading && totalAmmo > 0)
+        {
+            //Handle Reload
+            if (currentAmmo == 0 || gamePad.input.characterControls.Reload.triggered && currentAmmo != currentWeapon.magazineCapacity)
+            {
+                StartCoroutine(Reload());
             }
         }
     }
@@ -66,6 +81,8 @@ public class ShootSystem : MonoBehaviour
     public IEnumerator Reload()
     {
         isReloading = true;
+        animator.SetLayerWeight(2, 1);
+        animator.SetTrigger("Reload");
 
         yield return new WaitForSeconds(currentWeapon.reloadSpeed);
 
@@ -80,6 +97,8 @@ public class ShootSystem : MonoBehaviour
             currentAmmo += xAmmo;
             totalAmmo -= xAmmo;
         }
+        
+        animator.SetLayerWeight(2, 0);
         isReloading = false;
     }
     public IEnumerator Shoot()
@@ -92,13 +111,13 @@ public class ShootSystem : MonoBehaviour
 
         cameraVC.ApplyVibrationToCurrentCamera(0.5f);
         
-        gamepad.vibrateController(true);
+        gamePad.vibrateController(true);
 
         muzzleFlashParticles.SetActive(true);
 
         yield return new WaitForSeconds(1 / currentWeapon.FireRate);
 
-        gamepad.vibrateController(false);
+        gamePad.vibrateController(false);
 
         cameraVC.ApplyVibrationToCurrentCamera(0);
 
@@ -114,24 +133,39 @@ public class ShootSystem : MonoBehaviour
         if (gunEnd != null)
         {
             RaycastHit hit;
-            Vector3 screenCenter = Camera.main.ViewportToWorldPoint(new Vector3(0.5f, 0.5f, 0)); //Get the center of screen and return a Vector3
+            Vector2 screenCenter = new Vector2(Screen.width / 2f, Screen.height / 2); //Get the center of screen and return a Vector3
             Ray ray = Camera.main.ScreenPointToRay(screenCenter); //Create a ray from screen center
-            ray.origin = gunEnd.position; //Reference to the cannon`s gun
+            Vector3 origin = gunEnd.position; //Reference to the cannon`s gun
 
             //Raycast Shoot
-            if (Physics.Raycast(screenCenter, Camera.main.transform.forward, out hit, 100))
+            if (Physics.Raycast(ray, out hit, 100))
             {
                 if (hit.collider != null)
                 {
+                    HealthSystem healthSystem = hit.collider.GetComponentInParent<HealthSystem>(); //Check if the collider is an enemy with health system  
+                    if (healthSystem != null)
+                    {
+                        string impactZone = hit.collider.name; //Get impact zone of the ragdoll colliders
+                        healthSystem.ApplyDamage(currentWeapon.damage, impactZone); //Apply damage to health of the collider and return the impact zone
 
-                    Debug.DrawLine(ray.origin, hit.point, Color.blue,5);
+                        Rigidbody rb = hit.collider.GetComponent<Rigidbody>(); //Get rigidbody component od the collider
+                        Vector3 forceDirection = -hit.normal; //Get the direction to apply force
+                        float force = 100; //Amoutn of force to apply
+                        rb.AddForce(forceDirection * force, ForceMode.Impulse); //Apply a impulse force in the hit point of the collider
 
-                    Instantiate(impactParticles, hit.point, Quaternion.LookRotation(hit.normal));
+                        Debug.DrawLine(origin, hit.point, Color.green, 5); //Debug function
+                    }
+                    else
+                    {
+                        Debug.DrawLine(origin, hit.point, Color.blue, 5); //Debug function
+                    }
+
+                    Instantiate(impactParticles, hit.point, Quaternion.LookRotation(hit.normal)); //Create impact particles on the hit point
                 }
             }
             else
             {
-                Debug.DrawLine(ray.origin, Camera.main.transform.forward * 100, Color.red, 0.1f, true);
+                Debug.DrawLine(ray.origin, Camera.main.transform.forward * 100, Color.red, 0.1f, true); //Debug function
             }
         }
     }

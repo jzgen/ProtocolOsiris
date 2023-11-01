@@ -12,7 +12,7 @@ public class Weapon : MonoBehaviour
         Pistola
     }
     public  WeaponCategory Category;
-    public float Damge;
+    public float damage;
     public float FireRate;
     public int magazineCapacity;
     public float RecoilAmount;

@@ -27,11 +27,12 @@ public class PlayerCharacterController : MonoBehaviour
     private CharacterController characterController;
 
     //Camera Components
-    public VirtualCameraController cameraVC;
+    [HideInInspector] public VirtualCameraController cameraVC;
 
     //States
     public BaseStates currentStates;
     public StandState standstate = new StandState();
+    public CoverState coverState = new CoverState();
 
     void Start()
     {

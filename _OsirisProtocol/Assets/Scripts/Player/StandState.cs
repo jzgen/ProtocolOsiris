@@ -8,15 +8,16 @@ public class StandState : BaseStates
     public bool isWalking;
     float rotationX;
 
-    ShootSystem shootSystem;
+    ShootSystem _shootSystem;
 
     public override void EnterState(PlayerCharacterController player)
     {
-        shootSystem = player.GetComponent<ShootSystem>();
+        _shootSystem = player.GetComponent<ShootSystem>();
+        player.animator.applyRootMotion = true;
     }
     public override void UpdateState(PlayerCharacterController player)
     {
-        shootSystem.HandleShot();
+        _shootSystem.HandleShot();
 
         //Handle Aim
         if (player.gamePad.leftTrigger)
@@ -54,6 +55,8 @@ public class StandState : BaseStates
     }
     public override void ExitState(PlayerCharacterController player)
     {
-
+        player.animator.SetBool("IsWalking", false);
+        player.animator.SetFloat("AxisX", 0);
+        player.animator.SetFloat("AxisY", 0);
     }
 }
