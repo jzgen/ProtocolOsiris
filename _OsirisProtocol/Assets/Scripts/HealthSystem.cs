@@ -14,13 +14,13 @@ public class HealthSystem : MonoBehaviour
     [Header("UI Elments")]
     public GameObject healthbar;
     public Image barFill;
-    
+
     //Player Components
     Animator animator;
 
     //References
     private Camera mainCamera;
-    
+
     //Ragdoll components array
     Rigidbody[] ragdollRigidbodies;
 
@@ -28,7 +28,7 @@ public class HealthSystem : MonoBehaviour
     {
         animator = GetComponent<Animator>();
         ragdollRigidbodies = GetComponentsInChildren<Rigidbody>();
-        activateRagdoll(false);
+        ActivateRagdoll(false);
     }
     void Start()
     {
@@ -42,7 +42,7 @@ public class HealthSystem : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            activateRagdoll(true);
+            ActivateRagdoll(true);
             healthbar.SetActive(false);
             isDeath = true;
         }
@@ -52,7 +52,7 @@ public class HealthSystem : MonoBehaviour
         Debug.Log(impactZone);
         currentHealth -= damageApplied;
     }
-    void activateRagdoll(bool isActive)
+    void ActivateRagdoll(bool isActive)
     {
         animator.enabled = !isActive;
 
@@ -66,9 +66,9 @@ public class HealthSystem : MonoBehaviour
         float fillValue = currentHealth / maxHealth;
         barFill.fillAmount = fillValue;
 
-        if (this.tag == "iEnemy")
+        if (CompareTag("iEnemy"))
         {
-            healthbar.transform.rotation = Quaternion.LookRotation(healthbar.transform.position-mainCamera.transform.position);
+            healthbar.transform.rotation = Quaternion.LookRotation(healthbar.transform.position - mainCamera.transform.position);
         }
     }
 }

@@ -4,15 +4,13 @@ using UnityEngine;
 
 public class followBone : MonoBehaviour
 {
-    public Transform Bone;
-    void Start()
-    {
-        
-    }
+    public Transform bone;
+    public Transform torsoBone;
 
     // Update is called once per frame
     void Update()
     {
-        
+        transform.position = bone.position;
+        transform.rotation = torsoBone.rotation;
     }
 }

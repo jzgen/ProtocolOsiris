@@ -6,17 +6,15 @@ using UnityEngine;
 
 public class VirtualCameraController : MonoBehaviour
 {
-    public float VibrationIntensity = 1.0f;
     public int lastCamera;
-
     public List<CinemachineVirtualCamera> VirtualCameras;
     public CinemachineFreeLook FreeLookCamera;
 
     void Start()
     {
-        lastCamera = 0; // Asegúrate de establecer una cámara inicial
-        
-        if (FreeLookCamera == null )
+        lastCamera = 0; // Asegï¿½rate de establecer una cï¿½mara inicial
+
+        if (FreeLookCamera == null)
         {
             Debug.LogError("Missing Free Look");
         }
@@ -29,25 +27,44 @@ public class VirtualCameraController : MonoBehaviour
             VirtualCameras[index].Priority = 1;
             VirtualCameras[lastCamera].Priority = 0;
             CinemachineBasicMultiChannelPerlin noise = VirtualCameras[lastCamera].GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
-            noise.m_AmplitudeGain = 0;
+            if (noise != null)
+            {
+                noise.m_AmplitudeGain = 0;
+            }
+            else
+            {
+                Debug.LogError("The VC Camera at index " + lastCamera + " is missing noise profile");
+            }
+
             lastCamera = index;
         }
     }
 
-
-    public void ApplyVibrationToCurrentCamera(float maxVibrationIntensity)
+    public void ApplyVibrationToCurrentCamera()
     {
+        float maxVibrationIntensity = 0.5f;
         CinemachineVirtualCamera currentCamera = CinemachineCore.Instance.GetActiveBrain(0).ActiveVirtualCamera as CinemachineVirtualCamera;
 
         if (currentCamera != null)
         {
             CinemachineBasicMultiChannelPerlin noise = VirtualCameras[lastCamera].GetCinemachineComponent<CinemachineBasicMultiChannelPerlin>();
+            StartCoroutine(rumbleCamera(noise, maxVibrationIntensity));
+        }
+    }
 
-            // Para otras cámaras virtuales
-            if (noise != null)
-            {
-                noise.m_AmplitudeGain = maxVibrationIntensity;
-            }
+    IEnumerator rumbleCamera(CinemachineBasicMultiChannelPerlin noise, float maxVibrationIntensity)
+    {
+        // Para otras camaras virtuales
+        if (noise != null)
+        {
+            noise.m_AmplitudeGain = maxVibrationIntensity;
+        }
+
+        yield return new WaitForSeconds(0.25f);
+
+        if (noise != null)
+        {
+            noise.m_AmplitudeGain = 0;
         }
     }
 }

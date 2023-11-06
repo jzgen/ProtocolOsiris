@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(RiggingManager))]
 public class CoverSystem : MonoBehaviour
 {
     [Header("Ray Adjustment")]
@@ -24,7 +25,7 @@ public class CoverSystem : MonoBehaviour
     [Header("References")]
     public Transform borderRayOrigin;
     private GameObject hitReferenceObject;
-    
+
     //Raycast support objects
     private float coverDirection;
     private bool coverClose;
@@ -38,7 +39,7 @@ public class CoverSystem : MonoBehaviour
     GamepadHandler gamePad;
     PlayerCharacterController player;
     RiggingManager riggingManager;
-    float weight = 1;
+    public float rigWeight = 1;
 
     void Start()
     {
@@ -54,18 +55,18 @@ public class CoverSystem : MonoBehaviour
 
     void Update()
     {
-        riggingManager.SetConstraintWeight(weight);
+        riggingManager.SetConstraintWeight(rigWeight);
 
         if (!isCover)
         {
-            coverRayDetector();
+            CoverRayDetector();
         }
 
         if (coverClose && gamePad.input.characterControls.Cover.triggered && player.currentStates != player.coverState)
         {
             StartCoroutine(MoveToCover());
         }
-        else if(gamePad.input.characterControls.Cover.triggered && player.currentStates==player.coverState)
+        else if (gamePad.input.characterControls.Cover.triggered && player.currentStates == player.coverState)
         {
             StartCoroutine(QuitCover());
         }
@@ -76,10 +77,10 @@ public class CoverSystem : MonoBehaviour
         animator.applyRootMotion = false;
         lastPosition = transform.position;
         lastRotation = transform.rotation;
-        
+
         isCover = true;
 
-        weight = 0;
+        rigWeight = 0;
 
         timeElapsed = 0;
 
@@ -97,15 +98,13 @@ public class CoverSystem : MonoBehaviour
             Vector3 positionInterpolated = Vector3.Lerp(lastPosition, coverPosition, curveValue);
             Quaternion rotationInterpolated = Quaternion.Slerp(lastRotation, coverRotation, curveValue);
 
-            transform.position = positionInterpolated;
-            transform.rotation = rotationInterpolated;
+            transform.SetPositionAndRotation(positionInterpolated, rotationInterpolated);
 
             yield return null;
         }
 
         //Change To cover
-        transform.position = coverPosition;
-        transform.rotation = coverRotation;
+        transform.SetPositionAndRotation(coverPosition, coverRotation);
 
         player.SetState(player.coverState);
     }
@@ -118,17 +117,17 @@ public class CoverSystem : MonoBehaviour
 
         yield return new WaitForSeconds(0.6f);
 
-        weight = 1;
+        rigWeight = 1;
         isCover = false;
     }
 
-    void coverRayDetector()
+    void CoverRayDetector()
     {
         Vector3 rayOrigin = transform.position + new Vector3(0, 0.5f, 0);
         Vector3 rayDirection = transform.forward;
         RaycastHit hit;
 
-        if (Physics.Raycast(rayOrigin, rayDirection, out hit, rayDistance,coverLayerMask))
+        if (Physics.Raycast(rayOrigin, rayDirection, out hit, rayDistance, coverLayerMask))
         {
             //Temporal, for DrawGizmos
             hitPos = hit.point;

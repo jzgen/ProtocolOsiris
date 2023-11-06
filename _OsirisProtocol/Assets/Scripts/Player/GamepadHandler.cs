@@ -39,19 +39,15 @@ public class GamepadHandler : MonoBehaviour
         input.characterControls.Aim.performed += ctx => leftTrigger = true;
         input.characterControls.Aim.canceled += ctx => leftTrigger = false;
     }
-    public void vibrateController(bool perform)
+    public void vibrateController()
     {
-        if(gamepad != null)
-        {
-            if (perform == true) //If perform is true, turn on the controller vibration for both gamepad's motors
-            {
-                gamepad.SetMotorSpeeds(vibrationIntensity, vibrationIntensity);
-            }
-            else  //If perform is false, turn off the controller vibration for both gamepad's motors
-            {
-                gamepad.SetMotorSpeeds(0, 0);
-            }
-        }
+        StartCoroutine(rumble());
+    }
+    IEnumerator rumble()
+    {
+        gamepad.SetMotorSpeeds(vibrationIntensity, vibrationIntensity);
+        yield return new WaitForSeconds(0.25f);
+        InputSystem.ResetHaptics();
     }
 
     private void OnEnable()
