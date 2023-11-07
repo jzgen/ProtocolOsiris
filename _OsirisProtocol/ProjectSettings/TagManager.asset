@@ -6,6 +6,7 @@ TagManager:
   tags:
   - MuzzleFlash
   - iEnemy
+  - Cover
   layers:
   - Default
   - TransparentFX

@@ -37,6 +37,8 @@ public class iAgentController : MonoBehaviour
 		{
 			currentState.UpdateState(this);
 		}
+
+		MoveWhileAiming();
 	}
 	public void MoveWhileAiming()
 	{
@@ -47,7 +49,7 @@ public class iAgentController : MonoBehaviour
 			HandleWalk();
 
 			//Adjust the rotation to look the player
-			Vector3 lookDirection = player.position - transform.position;
+			Vector3 lookDirection = ((player.position - transform.position) / 2).normalized;
 			transform.rotation = Quaternion.LookRotation(lookDirection, Vector3.up);
 		}
 	}
