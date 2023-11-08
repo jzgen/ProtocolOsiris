@@ -122,10 +122,10 @@ public class ShootSystem : MonoBehaviour
                 //Shoot a physic bullet
                 currentWeapon.ShootBullet(direction);
 
-                Debug.DrawLine(currentWeapon.gunEnd.position, adjustedHit.point, Color.blue, 5); //Debug function 
+                //Debug.DrawLine(currentWeapon.gunEnd.position, adjustedHit.point, Color.blue, 5); //Debug function -----
             }
 
-            Debug.DrawLine(crosshairRay.origin, crosshariHit.point, Color.red, 5); //Debug function 
+            //Debug.DrawLine(crosshairRay.origin, crosshariHit.point, Color.red, 5); //Debug function -----
         }
     }
     public void SearchWeapon()

@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,6 +21,9 @@ public class iAgentController : MonoBehaviour
 	NavMeshAgent agent;
 	HealthSystem healthSystem;
 
+	iCoverDetection _coverDetection;
+	iShootSystem _shootSystem;
+
 	//Walk direction
 	public Vector2 directionXZ;
 
@@ -28,6 +32,10 @@ public class iAgentController : MonoBehaviour
 		animator = GetComponent<Animator>();
 		agent = GetComponent<NavMeshAgent>();
 		healthSystem = GetComponent<HealthSystem>();
+
+		_coverDetection = GetComponent<iCoverDetection>();
+		_shootSystem = GetComponent<iShootSystem>();
+
 	}
 
 	// Update is called once per frame
@@ -44,23 +52,36 @@ public class iAgentController : MonoBehaviour
 	{
 		if (!healthSystem.isDeath)
 		{
-			//Move the agent to specified position
-			agent.SetDestination(targetPosition.position);
+			_coverDetection.SearchCovers();
+
+			NavMeshHit hit;
+			if (NavMesh.SamplePosition(_coverDetection.bestCoverPos, out hit, 10, NavMesh.AllAreas))
+			{
+				agent.SetDestination(hit.position);
+			}
+
 			HandleWalk();
 
 			//Adjust the rotation to look the player
 			Vector3 lookDirection = ((player.position - transform.position) / 2).normalized;
 			transform.rotation = Quaternion.LookRotation(lookDirection, Vector3.up);
 		}
+		else
+		{
+			Array.Resize(ref _coverDetection.covers, 0);
+			_coverDetection.potentialCoverPoint.Clear();
+			_coverDetection.coverPoints.Clear();
+			_shootSystem.isDeath = true;
+		}
 	}
 	public void HandleWalk()
 	{
 		//Calculates the direction vector in local space XZ 
-		Vector3 moveDirection = targetPosition.position - transform.position;
+		Vector3 moveDirection = agent.destination - transform.position;
 		Vector3 localDirection = transform.InverseTransformDirection(moveDirection);
 		directionXZ = new Vector2(localDirection.x, localDirection.z).normalized;
 
-		float movementThreshold = 0.1f;
+		float movementThreshold = 0.5f;
 		bool isMoving = localDirection.magnitude > movementThreshold;
 
 		if (isMoving)

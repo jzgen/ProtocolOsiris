@@ -6,6 +6,9 @@ public class iShootSystem : MonoBehaviour
 {
 	[Header("IA Skills")]
 	public float accuracy;
+	public bool isShooting;
+	public float shootingTime;
+	public bool isDeath;
 
 	[Header("Weapon-Ammo")]
 	public int currentAmmo;
@@ -31,11 +34,30 @@ public class iShootSystem : MonoBehaviour
 		SearchWeapon();
 
 		currentAmmo = currentWeapon.magazineCapacity;
+
+		isDeath = false;
+		StartCoroutine(ShootingRoutine());
 	}
 	void Update()
 	{
-		aimDirection = ((playerHitArea.position - currentWeapon.gunEnd.position) / 2).normalized;
-		HandleShot();
+		if (isShooting && !isDeath)
+		{
+			HandleShot();
+			TorsoAim();
+		}
+	}
+	public IEnumerator ShootingRoutine()
+	{
+		while (true) // Bucle infinito para que la IA siempre siga este patrón
+		{
+			isShooting = false;
+
+			yield return new WaitForSeconds(shootingTime);
+
+			isShooting = true;
+
+			yield return new WaitForSeconds(shootingTime);
+		}
 	}
 	void HandleShot()
 	{
@@ -77,18 +99,16 @@ public class iShootSystem : MonoBehaviour
 		if (Physics.Raycast(rayOrigin, adjustedDirection, out RaycastHit hit, 100))
 		{
 			Vector3 shootDirection = (hit.point - rayOrigin).normalized;
-			currentWeapon.ShootBullet(shootDirection);
-			Debug.DrawLine(rayOrigin, hit.point, Color.blue, 0.1f);
+			currentWeapon.ShootBullet(adjustedDirection);
+			//Debug.DrawLine(rayOrigin, hit.point, Color.blue, 0.1f);
 		}
-
 	}
 
 	//Using the rigging controller aim the torso to the player 
 	void TorsoAim()
 	{
+		aimDirection = ((playerHitArea.position - rigTorsoController.position) / 2).normalized;
 		rigTorsoController.rotation = Quaternion.LookRotation(aimDirection);
-		Ray aimRay = new Ray(rigTorsoController.position, (aimDirection));
-		float distance = Vector3.Distance(transform.position, player.position);
 	}
 	//Search and assign the the weapon attached to this game object
 	public void SearchWeapon()
