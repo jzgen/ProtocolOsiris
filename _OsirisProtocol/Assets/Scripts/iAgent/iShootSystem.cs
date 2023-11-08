@@ -35,6 +35,7 @@ public class iShootSystem : MonoBehaviour
 	void Update()
 	{
 		aimDirection = ((playerHitArea.position - currentWeapon.gunEnd.position) / 2).normalized;
+		HandleShot();
 	}
 	void HandleShot()
 	{
